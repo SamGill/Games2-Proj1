@@ -92,7 +92,9 @@
     <ClCompile Include="Box.cpp" />
     <ClCompile Include="Colored Cube App.cpp" />
     <ClCompile Include="d3dApp.cpp" />
+    <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameTimer.cpp" />
+    <ClCompile Include="Input.cpp" />
     <ClCompile Include="Line.cpp" />
     <ClCompile Include="Quad.cpp" />
     <ClCompile Include="Triangle.cpp" />
@@ -100,9 +102,13 @@
   <ItemGroup>
     <ClInclude Include="Axes.h" />
     <ClInclude Include="Box.h" />
+    <ClInclude Include="constants.h" />
     <ClInclude Include="d3dApp.h" />
     <ClInclude Include="d3dUtil.h" />
+    <ClInclude Include="gameError.h" />
+    <ClInclude Include="GameObject.h" />
     <ClInclude Include="GameTimer.h" />
+    <ClInclude Include="Input.h" />
     <ClInclude Include="Line.h" />
     <ClInclude Include="Quad.h" />
     <ClInclude Include="Triangle.h" />

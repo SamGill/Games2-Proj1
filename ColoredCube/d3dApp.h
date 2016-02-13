@@ -15,9 +15,9 @@
 #include "GameTimer.h"
 #include <string>
 
-
 class D3DApp
 {
+
 public:
 	D3DApp(HINSTANCE hInstance);
 	virtual ~D3DApp();
