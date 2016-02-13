@@ -88,11 +88,11 @@ void Axes::draw()
 	md3dDevice->DrawIndexed(mNumFaces*3, 0, 2);
 	md3dDevice->DrawIndexed(mNumFaces*3, 0, 4);
 
-	/*md3dDevice->Draw(2, 0);
 	md3dDevice->Draw(2, 0);
-	md3dDevice->Draw(2, 0);*/
+	md3dDevice->Draw(2, 0);
+	md3dDevice->Draw(2, 0);
 
-	/*md3dDevice->DrawIndexed(6, 0  , 0);
+	md3dDevice->DrawIndexed(6, 0  , 0);
 	md3dDevice->DrawIndexed(6, 6  , 0);
-	md3dDevice->DrawIndexed(6, 12 , 0);*/
+	md3dDevice->DrawIndexed(6, 12 , 0);
 }

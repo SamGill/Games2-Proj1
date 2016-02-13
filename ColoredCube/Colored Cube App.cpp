@@ -165,11 +165,11 @@ void ColoredCubeApp::drawScene()
 	{
 		mTech->GetPassByIndex( p )->Apply(0);
 
-		mBox.draw();
-		/*mAxes.draw();
+		//mBox.draw();
+		mAxes.draw();
 		mLine.draw();
-		mTriangle.draw();*/
-		//mQuad.draw();
+		mTriangle.draw();
+		mQuad.draw();
 	}
 
 	// We specify DT_NOCLIP, so we do not care about width/height of the rect.
