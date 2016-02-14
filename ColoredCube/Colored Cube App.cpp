@@ -44,11 +44,15 @@ private:
 private:
 	Axes mAxes;
 	Box mBox;
+
+
 	Line mLine;
 	Triangle mTriangle;
 	Quad mQuad;
+
 	GameObject gameObject1;
 
+	GameObject enemyObjects[MAX_NUM_ENEMIES];
 
 	ID3D10Effect* mFX;
 	ID3D10EffectTechnique* mTech;
@@ -108,13 +112,20 @@ void ColoredCubeApp::initApp()
 	input->initialize(getMainWnd(), false);
 	//audio->initialize();
 
+
 	mAxes.init(md3dDevice, 1.0f);
 	mBox.init(md3dDevice, .5f);
 	mLine.init(md3dDevice, 1.0f);
 	//mTriangle.init(md3dDevice, 1.0f);
 	mQuad.init(md3dDevice, 10.0f);
 
-	gameObject1.init(&mBox, sqrt(2.0f), Vector3(0,.5,0), Vector3(0,0,0), 5,1);
+	gameObject1.init(&mBox, sqrt(2.0f), Vector3(5,.5,0), Vector3(0,0,0), 5,1);
+
+	int step = 2;
+	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
+	{
+		enemyObjects[i].init(&mBox, sqrt(2.0), Vector3(-5,.5,step*i - 3.8), Vector3(0,0,0), 0, 1);
+	}
 
 	buildFX();
 	buildVertexLayouts();
@@ -150,12 +161,18 @@ void ColoredCubeApp::updateScene(float dt)
 
 	gameObject1.update(dt);
 
+	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
+	{
+		enemyObjects[i].setVelocity( Vector3(1,0,0));
+
+		enemyObjects[i].update(dt);
+	}
 	D3DXMATRIX w;
 
 	D3DXMatrixTranslation(&w, 2, 2, 0);
 	mfxWVPVar->SetMatrix(w);
 
-	
+
 
 	// Restrict the angle mPhi.
 	if( mPhi < 0.1f )	mPhi = 0.1f;
@@ -210,6 +227,16 @@ void ColoredCubeApp::drawScene()
 	mfxWVPVar->SetMatrix((float*)&mWVP);
 	gameObject1.setMTech(mTech);
 	gameObject1.draw();
+
+
+	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
+	{
+		mWVP = enemyObjects[i].getWorldMatrix()  *mView*mProj;
+		mfxWVPVar->SetMatrix((float*)&mWVP);
+		enemyObjects[i].setMTech(mTech);
+		enemyObjects[i].draw();
+	}
+
 
 	// We specify DT_NOCLIP, so we do not care about width/height of the rect.
 	RECT R = {5, 5, 0, 0};

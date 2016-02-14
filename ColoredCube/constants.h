@@ -13,7 +13,7 @@
 #define ToRadian D3DXToRadian
 #define ToDegree D3DXToDegree
 
-
+const unsigned int MAX_NUM_ENEMIES = 5;
 
 
 #endif
