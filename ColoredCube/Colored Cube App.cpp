@@ -15,9 +15,16 @@
 #include "Vertex.h"
 #include "Triangle.h"
 #include "Quad.h"
+#include "Input.h"
+#include "GameObject.h"
+//#include "audio.h"
 
 class ColoredCubeApp : public D3DApp
 {
+private:
+	Input* input;
+	//Audio* audio;
+
 public:
 	ColoredCubeApp(HINSTANCE hInstance);
 	~ColoredCubeApp();
@@ -25,7 +32,10 @@ public:
 	void initApp();
 	void onResize();
 	void updateScene(float dt);
-	void drawScene(); 
+	void drawScene();
+
+	Input* getInput() {   return input;}
+	//Audio* getAudio() {   return audio;}
 
 private:
 	void buildFX();
@@ -37,6 +47,7 @@ private:
 	Line mLine;
 	Triangle mTriangle;
 	Quad mQuad;
+	GameObject gameObject1;
 
 
 	ID3D10Effect* mFX;
@@ -75,6 +86,10 @@ ColoredCubeApp::ColoredCubeApp(HINSTANCE hInstance)
 	D3DXMatrixIdentity(&mView);
 	D3DXMatrixIdentity(&mProj);
 	D3DXMatrixIdentity(&mWVP); 
+
+	input = new Input();
+	//audio = new Audio();
+
 }
 
 ColoredCubeApp::~ColoredCubeApp()
@@ -84,20 +99,28 @@ ColoredCubeApp::~ColoredCubeApp()
 
 	ReleaseCOM(mFX);
 	ReleaseCOM(mVertexLayout);
+	//safeDelete(input);
 }
 
 void ColoredCubeApp::initApp()
 {
 	D3DApp::initApp();
+	input->initialize(getMainWnd(), false);
+	//audio->initialize();
 
 	mAxes.init(md3dDevice, 1.0f);
 	mBox.init(md3dDevice, .5f);
 	mLine.init(md3dDevice, 1.0f);
-	mTriangle.init(md3dDevice, 1.0f);
-	mQuad.init(md3dDevice, 1.0f);
+	//mTriangle.init(md3dDevice, 1.0f);
+	mQuad.init(md3dDevice, 10.0f);
+
+	gameObject1.init(&mBox, sqrt(2.0f), Vector3(0,.5,0), Vector3(0,0,0), 5,1);
 
 	buildFX();
 	buildVertexLayouts();
+
+	//audio->run();
+
 }
 
 void ColoredCubeApp::onResize()
@@ -110,18 +133,29 @@ void ColoredCubeApp::onResize()
 
 void ColoredCubeApp::updateScene(float dt)
 {
+
+	Vector3 direction(0, 0, 0);
+	Vector3 oldposition = gameObject1.getPosition();
+
+	if(GetAsyncKeyState('A') & 0x8000)	direction.z = -1;
+	if(GetAsyncKeyState('D') & 0x8000)	direction.z = 1;
+	if(GetAsyncKeyState('W') & 0x8000)	direction.x = -1;
+	if(GetAsyncKeyState('S') & 0x8000)	direction.x = 1;
+
+	D3DXVec3Normalize(&direction, &direction);
+
+	gameObject1.setVelocity( direction * gameObject1.getSpeed());
+
 	D3DApp::updateScene(dt);
+
+	gameObject1.update(dt);
 
 	D3DXMATRIX w;
 
 	D3DXMatrixTranslation(&w, 2, 2, 0);
 	mfxWVPVar->SetMatrix(w);
 
-	// Update angles based on input to orbit camera around box.
-	if(GetAsyncKeyState('A') & 0x8000)	mTheta -= 2.0f*dt;
-	if(GetAsyncKeyState('D') & 0x8000)	mTheta += 2.0f*dt;
-	if(GetAsyncKeyState('W') & 0x8000)	mPhi -= 2.0f*dt;
-	if(GetAsyncKeyState('S') & 0x8000)	mPhi += 2.0f*dt;
+	
 
 	// Restrict the angle mPhi.
 	if( mPhi < 0.1f )	mPhi = 0.1f;
@@ -129,12 +163,12 @@ void ColoredCubeApp::updateScene(float dt)
 
 	// Convert Spherical to Cartesian coordinates: mPhi measured from +y
 	// and mTheta measured counterclockwise from -z.
-	float x =  5.0f*sinf(mPhi)*sinf(mTheta);
-	float z = -5.0f*sinf(mPhi)*cosf(mTheta);
-	float y =  5.0f*cosf(mPhi);
+	/*float x =  5.0f*sinf(mPhi)*sinf(mTheta);
+	float z =  -5.0f*sinf(mPhi)*cosf(mTheta);
+	float y =  5.0f*cosf(mPhi);*/
 
 	// Build the view matrix.
-	D3DXVECTOR3 pos(x, y, z);
+	D3DXVECTOR3 pos(10.0f, 2.0f, 0.0f);
 	D3DXVECTOR3 target(0.0f, 0.0f, 0.0f);
 	D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
 	D3DXMatrixLookAtLH(&mView, &pos, &target, &up);
@@ -165,12 +199,17 @@ void ColoredCubeApp::drawScene()
 	{
 		mTech->GetPassByIndex( p )->Apply(0);
 
-		mBox.draw();
-		/*mAxes.draw();
+		//mBox.draw();
+		mAxes.draw();
 		mLine.draw();
-		mTriangle.draw();*/
-		//mQuad.draw();
+		//mTriangle.draw();
+		mQuad.draw();
 	}
+
+	mWVP = gameObject1.getWorldMatrix()  *mView*mProj;
+	mfxWVPVar->SetMatrix((float*)&mWVP);
+	gameObject1.setMTech(mTech);
+	gameObject1.draw();
 
 	// We specify DT_NOCLIP, so we do not care about width/height of the rect.
 	RECT R = {5, 5, 0, 0};
