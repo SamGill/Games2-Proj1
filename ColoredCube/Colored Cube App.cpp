@@ -17,13 +17,14 @@
 #include "Quad.h"
 #include "Input.h"
 #include "GameObject.h"
-//#include "audio.h"
+#include "audio.h"
+#include "c:\Program Files (x86)\Windows Kits\8.0\Include\shared\winerror.h"
 
 class ColoredCubeApp : public D3DApp
 {
 private:
 	Input* input;
-	//Audio* audio;
+	Audio* audio;
 
 public:
 	ColoredCubeApp(HINSTANCE hInstance);
@@ -34,7 +35,7 @@ public:
 	void updateScene(float dt);
 	void drawScene();
 
-	Input* getInput() {   return input;}
+	//Input* getInput() {   return input;}
 	//Audio* getAudio() {   return audio;}
 
 private:
@@ -109,7 +110,7 @@ ColoredCubeApp::~ColoredCubeApp()
 void ColoredCubeApp::initApp()
 {
 	D3DApp::initApp();
-	input->initialize(getMainWnd(), false);
+	//input->initialize(getMainWnd(), false);
 	//audio->initialize();
 
 
@@ -119,18 +120,32 @@ void ColoredCubeApp::initApp()
 	//mTriangle.init(md3dDevice, 1.0f);
 	mQuad.init(md3dDevice, 10.0f);
 
-	gameObject1.init(&mBox, sqrt(2.0f), Vector3(5,.5,0), Vector3(0,0,0), 5,1);
+	gameObject1.init(&mBox, sqrt(2.0f), Vector3(5,.5,0), Vector3(0,0,0), 5000.0f,1.0f);
 
 	int step = 2;
 	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
 	{
-		enemyObjects[i].init(&mBox, sqrt(2.0), Vector3(-5,.5,step*i - 3.8), Vector3(0,0,0), 0, 1);
+		enemyObjects[i].init(&mBox, sqrt(2.0), Vector3(-5,.5,step*i - 3.8), Vector3(1,0,0), 3500.0f, 1);
 	}
 
 	buildFX();
 	buildVertexLayouts();
 
-	//audio->run();
+	audio = new Audio();
+	if (*WAVE_BANK != '\0' && *SOUND_BANK != '\0')  // if sound files defined
+	{
+		if (!audio->initialize()){
+
+		}
+
+		/*if( FAILED( hr = audio->initialize() ) )
+		{
+		if( hr == HRESULT_FROM_WIN32( ERROR_FILE_NOT_FOUND ) )
+		throw(GameError(gameErrorNS::FATAL_ERROR, "Failed to initialize sound system because media file not found."));
+		else
+		throw(GameError(gameErrorNS::FATAL_ERROR, "Failed to initialize sound system."));
+		}*/
+	}
 
 }
 
@@ -144,29 +159,59 @@ void ColoredCubeApp::onResize()
 
 void ColoredCubeApp::updateScene(float dt)
 {
+	Vector3 oldEnemyPositions[MAX_NUM_ENEMIES];
+	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
+	{
+		oldEnemyPositions[i] = enemyObjects[i].getPosition();
+	}
+
 
 	Vector3 direction(0, 0, 0);
 	Vector3 oldposition = gameObject1.getPosition();
 
-	if(GetAsyncKeyState('A') & 0x8000)	direction.z = -1;
-	if(GetAsyncKeyState('D') & 0x8000)	direction.z = 1;
-	if(GetAsyncKeyState('W') & 0x8000)	direction.x = -1;
-	if(GetAsyncKeyState('S') & 0x8000)	direction.x = 1;
+	D3DApp::updateScene(dt);
+	gameObject1.update(dt);
+	for (int i = 0; i < MAX_NUM_ENEMIES; i++) {
+		enemyObjects[i].update(dt);
+	}
+
+	if(GetAsyncKeyState('A') & 0x8000)  direction.z = -1.0f;
+	if(GetAsyncKeyState('D') & 0x8000)	direction.z = +1.0f;
+	if(GetAsyncKeyState('W') & 0x8000)	direction.x = -1.0f;
+	if(GetAsyncKeyState('S') & 0x8000)	direction.x = +1.0f;
 
 	D3DXVec3Normalize(&direction, &direction);
 
-	gameObject1.setVelocity( direction * gameObject1.getSpeed());
 
-	D3DApp::updateScene(dt);
-
-	gameObject1.update(dt);
+	gameObject1.setVelocity( direction * gameObject1.getSpeed() * dt);
 
 	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
 	{
-		enemyObjects[i].setVelocity( Vector3(1,0,0));
+		Vector3 currentEnemyDir = enemyObjects[i].getVelocity();
 
-		enemyObjects[i].update(dt);
+		D3DXVec3Normalize(&currentEnemyDir, &currentEnemyDir);
+
+		if(gameObject1.collided(&enemyObjects[i]))
+		{
+			audio->playCue(BEEP1);
+
+
+			enemyObjects[i].setPosition(oldEnemyPositions[i]);
+
+			currentEnemyDir *= -1;
+
+			gameObject1.setVelocity(Vector3(0,0,0));
+			gameObject1.setPosition(oldposition);
+		}
+
+		enemyObjects[i].setVelocity( currentEnemyDir * enemyObjects[i].getSpeed() * dt);
+
 	}
+
+
+
+
+
 	D3DXMATRIX w;
 
 	D3DXMatrixTranslation(&w, 2, 2, 0);

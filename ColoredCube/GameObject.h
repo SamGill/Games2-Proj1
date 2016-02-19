@@ -2,7 +2,6 @@
 #ifndef GameObject_H
 #define GameObject_H
 
-//#include "d3dUtil.h"
 #include "d3dUtil.h"
 
 #include "Box.h"

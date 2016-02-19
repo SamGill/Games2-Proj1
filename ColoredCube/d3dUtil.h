@@ -21,14 +21,14 @@
 	#endif
 #endif
 
-#if defined(DEBUG) || defined(_DEBUG)
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#endif
+//#if defined(DEBUG) || defined(_DEBUG)
+//#define _CRTDBG_MAP_ALLOC
+//#include <crtdbg.h>
+//#endif
 
 
-#include <d3dx10.h>
-#include <dxerr.h>
+#include "C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\D3DX10.h" //<d3dx10.h>
+#include "C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include\DXERR.h" //<dxerr.h>
 #include <cassert>
 
 

@@ -2,6 +2,7 @@
 // d3dApp.cpp by Frank Luna (C) 2008 All Rights Reserved.
 //=======================================================================================
 
+//#include "d3dApp.h"
 #include "d3dApp.h"
 #include <sstream>
 
