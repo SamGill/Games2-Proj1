@@ -22,7 +22,7 @@
 *.a
 *.lib
 *.sdf
-.opensdf
+*.opensdf
 
 # Executables
 *.exe

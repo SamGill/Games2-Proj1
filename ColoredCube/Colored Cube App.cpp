@@ -19,13 +19,14 @@
 #include "GameObject.h"
 #include "audio.h"
 #include "c:\Program Files (x86)\Windows Kits\8.0\Include\shared\winerror.h"
+#include "TimeBuffer.h"
 
 class ColoredCubeApp : public D3DApp
 {
 private:
 	Input* input;
 	Audio* audio;
-
+	TimeBuffer timeBuffer;
 public:
 	ColoredCubeApp(HINSTANCE hInstance);
 	~ColoredCubeApp();
@@ -125,16 +126,18 @@ void ColoredCubeApp::initApp()
 	int step = 2;
 	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
 	{
-		enemyObjects[i].init(&mBox, sqrt(2.0), Vector3(-5,.5,step*i - 3.8), Vector3(1,0,0), 3500.0f, 1);
+		enemyObjects[i].init(&mBox, sqrt(2.0), Vector3(-5,.5,step*i - 3.8), Vector3(1,0,0), 3000.0f, 1);
+		enemyObjects[i].setInActive();
 	}
 
 	buildFX();
 	buildVertexLayouts();
 
 	audio = new Audio();
+
 	if (*WAVE_BANK != '\0' && *SOUND_BANK != '\0')  // if sound files defined
 	{
-		if (!audio->initialize()){
+		if (!audio->initialize()) {
 
 		}
 
@@ -147,6 +150,8 @@ void ColoredCubeApp::initApp()
 		}*/
 	}
 
+	timeBuffer.resetClock();
+
 }
 
 void ColoredCubeApp::onResize()
@@ -157,8 +162,42 @@ void ColoredCubeApp::onResize()
 	D3DXMatrixPerspectiveFovLH(&mProj, 0.25f*PI, aspect, 1.0f, 1000.0f);
 }
 
+void generateEnemy(GameObject enemyObjects[]) {
+	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
+	{
+		//This means he's already on the field, so keep going
+		if (enemyObjects[i].getActiveState())
+			continue;
+		else
+		{
+
+			float horizontalStartingPoint = rand()%5;
+			
+			//flip it so that the boxes also appear sometimes on the left part of the screen
+			if (rand()%2)
+				horizontalStartingPoint *= -1;
+
+
+			//put the enemy object somewhere randomly and make them active
+			enemyObjects[i].setPosition(Vector3(-5,.5, horizontalStartingPoint));
+			enemyObjects[i].setActive();
+
+			return;
+		}
+	}
+}
+
 void ColoredCubeApp::updateScene(float dt)
 {
+	//Generate a block every three seconds
+	if (timeBuffer.elapsedTime() > 2) {
+		timeBuffer.resetClock();
+
+		generateEnemy(enemyObjects);
+	}
+
+
+
 	Vector3 oldEnemyPositions[MAX_NUM_ENEMIES];
 	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
 	{
@@ -191,17 +230,11 @@ void ColoredCubeApp::updateScene(float dt)
 
 		D3DXVec3Normalize(&currentEnemyDir, &currentEnemyDir);
 
-		if(gameObject1.collided(&enemyObjects[i]))
+		//if they collide and are active
+		if(gameObject1.collided(&enemyObjects[i]) && enemyObjects[i].getActiveState())
 		{
 			audio->playCue(BEEP1);
-
-
-			enemyObjects[i].setPosition(oldEnemyPositions[i]);
-
-			currentEnemyDir *= -1;
-
-			gameObject1.setVelocity(Vector3(0,0,0));
-			gameObject1.setPosition(oldposition);
+			enemyObjects[i].setInActive();
 		}
 
 		enemyObjects[i].setVelocity( currentEnemyDir * enemyObjects[i].getSpeed() * dt);

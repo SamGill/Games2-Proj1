@@ -117,6 +117,7 @@
     <ClInclude Include="Input.h" />
     <ClInclude Include="Line.h" />
     <ClInclude Include="Quad.h" />
+    <ClInclude Include="TimeBuffer.h" />
     <ClInclude Include="Triangle.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
