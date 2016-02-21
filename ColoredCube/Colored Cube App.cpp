@@ -159,8 +159,6 @@ void ColoredCubeApp::onResize()
 
 void ColoredCubeApp::updateScene(float dt)
 {
-
-	int movementMax = 3;
 	Vector3 oldEnemyPositions[MAX_NUM_ENEMIES];
 	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
 	{
@@ -179,35 +177,19 @@ void ColoredCubeApp::updateScene(float dt)
 
 	if(GetAsyncKeyState('A') & 0x8000)  direction.z = -1.0f;
 	if(GetAsyncKeyState('D') & 0x8000)	direction.z = +1.0f;
-	// commenting below locks the cube in one dimension
-	//if(GetAsyncKeyState('W') & 0x8000)	direction.x = -1.0f;
-	//if(GetAsyncKeyState('S') & 0x8000)	direction.x = +1.0f;
+	if(GetAsyncKeyState('W') & 0x8000)	direction.x = -1.0f;
+	if(GetAsyncKeyState('S') & 0x8000)	direction.x = +1.0f;
 
 	D3DXVec3Normalize(&direction, &direction);
 
 
 	gameObject1.setVelocity( direction * gameObject1.getSpeed() * dt);
 
-	if (gameObject1.getPosition().z < -movementMax){
-		gameObject1.setPosition(Vector3(oldposition.x, oldposition.y, -movementMax));
-	}
-	if (gameObject1.getPosition().z > movementMax){
-		gameObject1.setPosition(Vector3(oldposition.x, oldposition.y, movementMax));
-	}
-
 	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
 	{
-		/*Vector3 currentEnemyDir = enemyObjects[i].getVelocity();
+		Vector3 currentEnemyDir = enemyObjects[i].getVelocity();
 
-		D3DXVec3Normalize(&currentEnemyDir, &currentEnemyDir);*/
-
-		Vector3 towardPlayer = Vector3(enemyObjects[i].getVelocity().x, enemyObjects[i].getVelocity().y, oldposition.z - enemyObjects[i].getPosition().z);
-
-		if (towardPlayer.x < .0001 && towardPlayer.x > -.0001){
-			towardPlayer = Vector3(1, enemyObjects[i].getVelocity().y, oldposition.z - enemyObjects[i].getPosition().z);
-		}
-
-		D3DXVec3Normalize(&towardPlayer, &towardPlayer);
+		D3DXVec3Normalize(&currentEnemyDir, &currentEnemyDir);
 
 		if(gameObject1.collided(&enemyObjects[i]))
 		{
@@ -216,18 +198,15 @@ void ColoredCubeApp::updateScene(float dt)
 
 			enemyObjects[i].setPosition(oldEnemyPositions[i]);
 
-			towardPlayer *= -1;
+			currentEnemyDir *= -1;
 
 			gameObject1.setVelocity(Vector3(0,0,0));
 			gameObject1.setPosition(oldposition);
 		}
 
-		
-		enemyObjects[i].setVelocity( towardPlayer * enemyObjects[i].getSpeed() * dt);
+		enemyObjects[i].setVelocity( currentEnemyDir * enemyObjects[i].getSpeed() * dt);
 
 	}
-
-
 
 
 
