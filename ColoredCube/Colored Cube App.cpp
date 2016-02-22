@@ -121,7 +121,7 @@ void ColoredCubeApp::initApp()
 	//mTriangle.init(md3dDevice, 1.0f);
 	mQuad.init(md3dDevice, 10.0f);
 
-	gameObject1.init(&mBox, sqrt(2.0f), Vector3(5,.5,0), Vector3(0,0,0), 5000.0f,1.0f);
+	gameObject1.init(&mBox, sqrt(2.0f), Vector3(6,.5,0), Vector3(0,0,0), 5000.0f,1.0f);
 
 	int step = 2;
 	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
@@ -162,7 +162,7 @@ void ColoredCubeApp::onResize()
 	D3DXMatrixPerspectiveFovLH(&mProj, 0.25f*PI, aspect, 1.0f, 1000.0f);
 }
 
-void generateEnemy(GameObject enemyObjects[]) {
+void generateEnemy(GameObject enemyObjects[], float dt) {
 	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
 	{
 		//This means he's already on the field, so keep going
@@ -172,15 +172,31 @@ void generateEnemy(GameObject enemyObjects[]) {
 		{
 
 			float horizontalStartingPoint = rand()%5;
-			
+
 			//flip it so that the boxes also appear sometimes on the left part of the screen
+			int leftOrRightSide = 1;
 			if (rand()%2)
-				horizontalStartingPoint *= -1;
+				leftOrRightSide = -1;
+				
+
+
+			horizontalStartingPoint *= leftOrRightSide;
 
 
 			//put the enemy object somewhere randomly and make them active
 			enemyObjects[i].setPosition(Vector3(-5,.5, horizontalStartingPoint));
 			enemyObjects[i].setActive();
+
+			//Now figure out their direction of travel
+
+			int randomZValue = ( rand() % (PLAYER_Z_RANGE + 1) ) * leftOrRightSide;
+
+			//These are the player starting points
+			Vector3 direction = Vector3(5, .5, randomZValue) - enemyObjects[i].getPosition();
+
+			D3DXVec3Normalize(&direction, &direction);
+
+			enemyObjects[i].setVelocity(direction * enemyObjects[i].getSpeed() * dt);
 
 			return;
 		}
@@ -193,10 +209,8 @@ void ColoredCubeApp::updateScene(float dt)
 	if (timeBuffer.elapsedTime() > 2) {
 		timeBuffer.resetClock();
 
-		generateEnemy(enemyObjects);
+		generateEnemy(enemyObjects, dt);
 	}
-
-
 
 	Vector3 oldEnemyPositions[MAX_NUM_ENEMIES];
 	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
@@ -216,19 +230,24 @@ void ColoredCubeApp::updateScene(float dt)
 
 	if(GetAsyncKeyState('A') & 0x8000)  direction.z = -1.0f;
 	if(GetAsyncKeyState('D') & 0x8000)	direction.z = +1.0f;
-	if(GetAsyncKeyState('W') & 0x8000)	direction.x = -1.0f;
-	if(GetAsyncKeyState('S') & 0x8000)	direction.x = +1.0f;
+	// commenting below locks the cube in one dimension
+	//if(GetAsyncKeyState('W') & 0x8000)	direction.x = -1.0f;
+	//if(GetAsyncKeyState('S') & 0x8000)	direction.x = +1.0f;
 
 	D3DXVec3Normalize(&direction, &direction);
 
 
 	gameObject1.setVelocity( direction * gameObject1.getSpeed() * dt);
 
+	if (gameObject1.getPosition().z < -PLAYER_Z_RANGE){
+		gameObject1.setPosition(Vector3(oldposition.x, oldposition.y, -PLAYER_Z_RANGE));
+	}
+	if (gameObject1.getPosition().z > PLAYER_Z_RANGE){
+		gameObject1.setPosition(Vector3(oldposition.x, oldposition.y, PLAYER_Z_RANGE));
+	}
+
 	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
 	{
-		Vector3 currentEnemyDir = enemyObjects[i].getVelocity();
-
-		D3DXVec3Normalize(&currentEnemyDir, &currentEnemyDir);
 
 		//if they collide and are active
 		if(gameObject1.collided(&enemyObjects[i]) && enemyObjects[i].getActiveState())
@@ -236,8 +255,6 @@ void ColoredCubeApp::updateScene(float dt)
 			audio->playCue(BEEP1);
 			enemyObjects[i].setInActive();
 		}
-
-		enemyObjects[i].setVelocity( currentEnemyDir * enemyObjects[i].getSpeed() * dt);
 
 	}
 
