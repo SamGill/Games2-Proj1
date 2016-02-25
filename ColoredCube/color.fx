@@ -9,6 +9,8 @@ cbuffer cbPerObject
 	float4x4 gWVP; 
 };
 
+int black_white;
+
 void VS(float3 iPosL  : POSITION,
         float4 iColor : COLOR,
         out float4 oPosH  : SV_POSITION,
@@ -24,7 +26,15 @@ void VS(float3 iPosL  : POSITION,
 float4 PS(float4 posH  : SV_POSITION,
           float4 color : COLOR) : SV_Target
 {
-    return color;
+	if (black_white == 0)
+		return color;
+	else {
+		color.r = (color.r + color.g + color.b)/3;
+		color.g = (color.r + color.g + color.b)/3;
+		color.b = (color.r + color.g + color.b)/3;
+
+		return color;
+	}
 }
 
 technique10 ColorTech

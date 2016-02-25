@@ -20,6 +20,7 @@
 #include "audio.h"
 #include "c:\Program Files (x86)\Windows Kits\8.0\Include\shared\winerror.h"
 #include "TimeBuffer.h"
+#include "GameStateManager.h"
 
 class ColoredCubeApp : public D3DApp
 {
@@ -35,6 +36,7 @@ public:
 	void onResize();
 	void updateScene(float dt);
 	void drawScene();
+	void restartGame();
 
 	//Input* getInput() {   return input;}
 	//Audio* getAudio() {   return audio;}
@@ -47,6 +49,7 @@ private:
 	Axes mAxes;
 	Box mBox;
 
+	GameStateManager* gsm;
 
 	Line mLine;
 	Triangle mTriangle;
@@ -61,12 +64,16 @@ private:
 	ID3D10InputLayout* mVertexLayout;
 	ID3D10EffectMatrixVariable* mfxWVPVar;
 
+	ID3D10EffectVariable* mfxBlack_WhiteVar;
+
 	D3DXMATRIX mView;
 	D3DXMATRIX mProj;
 	D3DXMATRIX mWVP;
 
 	float mTheta;
 	float mPhi;
+
+	bool spacePressedLastFrame;
 };
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
@@ -96,6 +103,9 @@ ColoredCubeApp::ColoredCubeApp(HINSTANCE hInstance)
 	input = new Input();
 	//audio = new Audio();
 
+	gsm = new GameStateManager();
+	spacePressedLastFrame = false;
+
 }
 
 ColoredCubeApp::~ColoredCubeApp()
@@ -110,6 +120,7 @@ ColoredCubeApp::~ColoredCubeApp()
 
 void ColoredCubeApp::initApp()
 {
+
 	D3DApp::initApp();
 	//input->initialize(getMainWnd(), false);
 	//audio->initialize();
@@ -205,89 +216,171 @@ void generateEnemy(GameObject enemyObjects[], float dt) {
 
 void ColoredCubeApp::updateScene(float dt)
 {
-	//Generate a block every three seconds
-	if (timeBuffer.elapsedTime() > 2) {
-		timeBuffer.resetClock();
+	switch (gsm->getGameState()) {
+	case GameStateManager::START_GAME: {
+		D3DApp::updateScene(dt);
+		gameObject1.update(dt);
+		D3DXMATRIX w;
 
-		generateEnemy(enemyObjects, dt);
-	}
+		D3DXMatrixTranslation(&w, 2, 2, 0);
+		mfxWVPVar->SetMatrix(w);
 
-	Vector3 oldEnemyPositions[MAX_NUM_ENEMIES];
-	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
-	{
-		oldEnemyPositions[i] = enemyObjects[i].getPosition();
-	}
+		// Build the view matrix.
+		D3DXVECTOR3 pos(10.0f, 2.0f, 0.0f);
+		D3DXVECTOR3 target(0.0f, 0.0f, 0.0f);
+		D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
+		D3DXMatrixLookAtLH(&mView, &pos, &target, &up);
 
-
-	Vector3 direction(0, 0, 0);
-	Vector3 oldposition = gameObject1.getPosition();
-
-	D3DApp::updateScene(dt);
-	gameObject1.update(dt);
-	for (int i = 0; i < MAX_NUM_ENEMIES; i++) {
-		enemyObjects[i].update(dt);
-	}
-
-	if(GetAsyncKeyState('A') & 0x8000)  direction.z = -1.0f;
-	if(GetAsyncKeyState('D') & 0x8000)	direction.z = +1.0f;
-	// commenting below locks the cube in one dimension
-	//if(GetAsyncKeyState('W') & 0x8000)	direction.x = -1.0f;
-	//if(GetAsyncKeyState('S') & 0x8000)	direction.x = +1.0f;
-
-	D3DXVec3Normalize(&direction, &direction);
-
-
-	gameObject1.setVelocity( direction * gameObject1.getSpeed() * dt);
-
-	if (gameObject1.getPosition().z < -PLAYER_Z_RANGE){
-		gameObject1.setPosition(Vector3(oldposition.x, oldposition.y, -PLAYER_Z_RANGE));
-	}
-	if (gameObject1.getPosition().z > PLAYER_Z_RANGE){
-		gameObject1.setPosition(Vector3(oldposition.x, oldposition.y, PLAYER_Z_RANGE));
-	}
-
-	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
-	{
-
-		//if they collide and are active
-		if(gameObject1.collided(&enemyObjects[i]) && enemyObjects[i].getActiveState())
-		{
-			audio->playCue(BEEP1);
-			enemyObjects[i].setInActive();
+		if(GetAsyncKeyState(VK_SPACE) & 0x8000 && gsm->getGameState() != GameStateManager::IN_GAME) {
+			spacePressedLastFrame = true;
+			gsm->setGameState(GameStateManager::IN_GAME);
 		}
 
+		break;
+
+
+									   }
+
+	case GameStateManager::IN_GAME:
+		{
+			//Generate a block every three seconds
+			if (timeBuffer.elapsedTime() > 2) {
+				timeBuffer.resetClock();
+
+				generateEnemy(enemyObjects, dt);
+			}
+
+			Vector3 oldEnemyPositions[MAX_NUM_ENEMIES];
+			for (int i = 0; i < MAX_NUM_ENEMIES; i++)
+			{
+				oldEnemyPositions[i] = enemyObjects[i].getPosition();
+			}
+
+
+			Vector3 direction(0, 0, 0);
+			Vector3 oldposition = gameObject1.getPosition();
+
+			D3DApp::updateScene(dt);
+			gameObject1.update(dt);
+			for (int i = 0; i < MAX_NUM_ENEMIES; i++) {
+				enemyObjects[i].update(dt);
+			}
+
+			if(GetAsyncKeyState('A') & 0x8000)  direction.z = -1.0f;
+			if(GetAsyncKeyState('D') & 0x8000)	direction.z = +1.0f;
+			// commenting below locks the cube in one dimension
+			//if(GetAsyncKeyState('W') & 0x8000)	direction.x = -1.0f;
+			//if(GetAsyncKeyState('S') & 0x8000)	direction.x = +1.0f;
+
+			D3DXVec3Normalize(&direction, &direction);
+
+
+			gameObject1.setVelocity( direction * gameObject1.getSpeed() * dt);
+
+			if (gameObject1.getPosition().z < -PLAYER_Z_RANGE){
+				gameObject1.setPosition(Vector3(oldposition.x, oldposition.y, -PLAYER_Z_RANGE));
+			}
+			if (gameObject1.getPosition().z > PLAYER_Z_RANGE){
+				gameObject1.setPosition(Vector3(oldposition.x, oldposition.y, PLAYER_Z_RANGE));
+			}
+
+			for (int i = 0; i < MAX_NUM_ENEMIES; i++)
+			{
+
+				//if they collide and are active
+				if(gameObject1.collided(&enemyObjects[i]) && enemyObjects[i].getActiveState())
+				{
+					audio->playCue(BEEP1);
+					enemyObjects[i].setInActive();
+					gsm->setGameState(GameStateManager::END_GAME);
+				}
+
+			}
+
+			D3DXMATRIX w;
+
+			D3DXMatrixTranslation(&w, 2, 2, 0);
+			mfxWVPVar->SetMatrix(w);
+
+
+
+			// Restrict the angle mPhi.
+			if( mPhi < 0.1f )	mPhi = 0.1f;
+			if( mPhi > PI-0.1f)	mPhi = PI-0.1f;
+
+			// Convert Spherical to Cartesian coordinates: mPhi measured from +y
+			// and mTheta measured counterclockwise from -z.
+			/*float x =  5.0f*sinf(mPhi)*sinf(mTheta);
+			float z =  -5.0f*sinf(mPhi)*cosf(mTheta);
+			float y =  5.0f*cosf(mPhi);*/
+
+			// Build the view matrix.
+			D3DXVECTOR3 pos(10.0f, 2.0f, 0.0f);
+			D3DXVECTOR3 target(0.0f, 0.0f, 0.0f);
+			D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
+			D3DXMatrixLookAtLH(&mView, &pos, &target, &up);
+		}
+
+
+	case GameStateManager::END_GAME:
+		{
+			//D3DApp::updateScene(dt);
+			//gameObject1.update(dt);
+			D3DXMATRIX w;
+
+			D3DXMatrixTranslation(&w, 2, 2, 0);
+			mfxWVPVar->SetMatrix(w);
+
+			// Build the view matrix.
+			D3DXVECTOR3 pos(10.0f, 2.0f, 0.0f);
+			D3DXVECTOR3 target(0.0f, 0.0f, 0.0f);
+			D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
+			D3DXMatrixLookAtLH(&mView, &pos, &target, &up);
+
+			if(GetAsyncKeyState(VK_SPACE) & 0x8000 && gsm->getGameState() != GameStateManager::IN_GAME) {
+				spacePressedLastFrame = true;
+				restartGame();
+				gsm->setGameState(GameStateManager::IN_GAME);
+			}
+
+
+			break;
+		}
+
+
+	default: {
+		throw(GameError(gameErrorNS::FATAL_ERROR, "Game State Error"));
+		break;
+			 }
 	}
-
-
-
-
-
-	D3DXMATRIX w;
-
-	D3DXMatrixTranslation(&w, 2, 2, 0);
-	mfxWVPVar->SetMatrix(w);
-
-
-
-	// Restrict the angle mPhi.
-	if( mPhi < 0.1f )	mPhi = 0.1f;
-	if( mPhi > PI-0.1f)	mPhi = PI-0.1f;
-
-	// Convert Spherical to Cartesian coordinates: mPhi measured from +y
-	// and mTheta measured counterclockwise from -z.
-	/*float x =  5.0f*sinf(mPhi)*sinf(mTheta);
-	float z =  -5.0f*sinf(mPhi)*cosf(mTheta);
-	float y =  5.0f*cosf(mPhi);*/
-
-	// Build the view matrix.
-	D3DXVECTOR3 pos(10.0f, 2.0f, 0.0f);
-	D3DXVECTOR3 target(0.0f, 0.0f, 0.0f);
-	D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
-	D3DXMatrixLookAtLH(&mView, &pos, &target, &up);
 }
 
 void ColoredCubeApp::drawScene()
 {
+	int foo[1] = {0};
+	switch (gsm->getGameState()) {
+	case GameStateManager::START_GAME:
+		{
+			foo[0] = 1;
+			break;
+		}
+	case GameStateManager::IN_GAME:
+		{
+			foo[0] = 0;
+			break;
+		}
+	case GameStateManager::END_GAME:
+		{
+			foo[0] = 1;
+			break;
+		}
+	default:
+		foo[0] = 0;
+		break;
+	}
+
+	mfxBlack_WhiteVar->SetRawValue(&foo[0], 0, sizeof(int));
+
 	D3DApp::drawScene();
 
 	// Restore default states, input layout and primitive topology 
@@ -340,6 +433,17 @@ void ColoredCubeApp::drawScene()
 	mSwapChain->Present(0, 0);
 }
 
+void ColoredCubeApp::restartGame() {
+	gameObject1.init(&mBox, sqrt(2.0f), Vector3(6,.5,0), Vector3(0,0,0), 5000.0f,1.0f);
+
+	int step = 2;
+	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
+	{
+		enemyObjects[i].init(&mBox, sqrt(2.0), Vector3(-5,.5,step*i - 3.8), Vector3(1,0,0), 3000.0f, 1);
+		enemyObjects[i].setInActive();
+	}
+}
+
 void ColoredCubeApp::buildFX()
 {
 	DWORD shaderFlags = D3D10_SHADER_ENABLE_STRICTNESS;
@@ -365,6 +469,7 @@ void ColoredCubeApp::buildFX()
 	mTech = mFX->GetTechniqueByName("ColorTech");
 
 	mfxWVPVar = mFX->GetVariableByName("gWVP")->AsMatrix();
+	mfxBlack_WhiteVar = mFX->GetVariableByName("black_white");
 }
 
 void ColoredCubeApp::buildVertexLayouts()
