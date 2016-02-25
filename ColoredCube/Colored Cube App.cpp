@@ -20,6 +20,7 @@
 #include "audio.h"
 #include "c:\Program Files (x86)\Windows Kits\8.0\Include\shared\winerror.h"
 #include "TimeBuffer.h"
+#include <sstream>
 
 class ColoredCubeApp : public D3DApp
 {
@@ -67,6 +68,9 @@ private:
 
 	float mTheta;
 	float mPhi;
+
+	int score;
+	std::wstring finalScore;
 };
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
@@ -116,6 +120,9 @@ void ColoredCubeApp::initApp()
 
 	float boxScale = 0.5f;
 	float collisionFixFactor = 1.1f;
+
+	// increments when you run into a cube // just for now
+	score = 0;
 	mAxes.init(md3dDevice, 1.0f);
 	mBox.init(md3dDevice, boxScale);
 	mLine.init(md3dDevice, 1.0f);
@@ -255,13 +262,10 @@ void ColoredCubeApp::updateScene(float dt)
 		{
 			audio->playCue(BEEP1);
 			enemyObjects[i].setInActive();
+			score++;
 		}
 
 	}
-
-
-
-
 
 	D3DXMATRIX w;
 
@@ -333,10 +337,16 @@ void ColoredCubeApp::drawScene()
 		enemyObjects[i].draw();
 	}
 
-
+	std::wostringstream scoreString;   
+	scoreString.precision(6);
+	scoreString << score;
+	finalScore = scoreString.str();
 	// We specify DT_NOCLIP, so we do not care about width/height of the rect.
 	RECT R = {5, 5, 0, 0};
+	RECT R2 = {GAME_WIDTH/2 + 50, GAME_HEIGHT + 65, 0, 0};
 	mFont->DrawText(0, mFrameStats.c_str(), -1, &R, DT_NOCLIP, BLACK);
+	scoreFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, BLACK);
+
 
 	mSwapChain->Present(0, 0);
 }
