@@ -1,22 +1,18 @@
-//=======================================================================================
-// Box.cpp by Frank Luna (C) 2008 All Rights Reserved.
-//=======================================================================================
-
-#include "Box.h"
+#include "Bullet.h"
 #include "Vertex.h"
 
-Box::Box()
+Bullet::Bullet()
 : mNumVertices(0), mNumFaces(0), md3dDevice(0), mVB(0), mIB(0)
 {
 }
  
-Box::~Box()
+Bullet::~Bullet()
 {
 	ReleaseCOM(mVB);
 	ReleaseCOM(mIB);
 }
 
-void Box::init(ID3D10Device* device, float scale, D3DXCOLOR c)
+void Bullet::init(ID3D10Device* device, float scale)
 {
 	md3dDevice = device;
  
@@ -26,14 +22,14 @@ void Box::init(ID3D10Device* device, float scale, D3DXCOLOR c)
 	// Create vertex buffer
     Vertex vertices[] =
     {
-		{D3DXVECTOR3(-1.0f, -1.0f, -1.0f), c},
-		{D3DXVECTOR3(-1.0f, +1.0f, -1.0f), c},
-		{D3DXVECTOR3(+1.0f, +1.0f, -1.0f), c},
-		{D3DXVECTOR3(+1.0f, -1.0f, -1.0f), c},
-		{D3DXVECTOR3(-1.0f, -1.0f, +1.0f), c},
-		{D3DXVECTOR3(-1.0f, +1.0f, +1.0f), c},
-		{D3DXVECTOR3(+1.0f, +1.0f, +1.0f), c},
-		{D3DXVECTOR3(+1.0f, -1.0f, +1.0f), c},
+		{D3DXVECTOR3(-1.0f, -1.0f, -1.0f), BLACK},
+		{D3DXVECTOR3(-1.0f, +1.0f, -1.0f), BLACK},
+		{D3DXVECTOR3(+1.0f, +1.0f, -1.0f), RED},
+		{D3DXVECTOR3(+1.0f, -1.0f, -1.0f), BLACK},
+		{D3DXVECTOR3(-1.0f, -1.0f, +1.0f), BLACK},
+		{D3DXVECTOR3(-1.0f, +1.0f, +1.0f), BLACK},
+		{D3DXVECTOR3(+1.0f, +1.0f, +1.0f), BLACK},
+		{D3DXVECTOR3(+1.0f, -1.0f, +1.0f), BLACK},
     };
 
 	// Scale the box.
@@ -91,7 +87,7 @@ void Box::init(ID3D10Device* device, float scale, D3DXCOLOR c)
     HR(md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB));
 }
 
-void Box::draw()
+void Bullet::draw()
 {
 	UINT stride = sizeof(Vertex);
     UINT offset = 0;

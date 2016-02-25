@@ -10,6 +10,7 @@
 
 #include "d3dApp.h"
 #include "Box.h"
+#include "Bullet.h"
 #include "Line.h"
 #include "Axes.h"
 #include "Vertex.h"
@@ -45,8 +46,7 @@ private:
 
 private:
 	Axes mAxes;
-	Box mBox;
-
+	Box mEnemy, mPlayer, mBullet;
 
 	Line mLine;
 	Triangle mTriangle;
@@ -55,6 +55,8 @@ private:
 	GameObject gameObject1;
 
 	GameObject enemyObjects[MAX_NUM_ENEMIES];
+
+	GameObject playerBullets[MAX_NUM_BULLETS];
 
 	ID3D10Effect* mFX;
 	ID3D10EffectTechnique* mTech;
@@ -116,18 +118,26 @@ void ColoredCubeApp::initApp()
 
 
 	mAxes.init(md3dDevice, 1.0f);
-	mBox.init(md3dDevice, .5f);
+	mEnemy.init(md3dDevice, .5f, RED);
+	mPlayer.init(md3dDevice, .5f, BLUE);
+	mBullet.init(md3dDevice, .25f, BLACK);
 	mLine.init(md3dDevice, 1.0f);
 	//mTriangle.init(md3dDevice, 1.0f);
 	mQuad.init(md3dDevice, 10.0f);
 
-	gameObject1.init(&mBox, sqrt(2.0f), Vector3(6,.5,0), Vector3(0,0,0), 5000.0f,1.0f);
+	gameObject1.init(&mPlayer, sqrt(2.0f), Vector3(6,.5,0), Vector3(0,0,0), 5000.0f,1.0f);
 
 	int step = 2;
 	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
 	{
-		enemyObjects[i].init(&mBox, sqrt(2.0), Vector3(-5,.5,step*i - 3.8), Vector3(1,0,0), 3000.0f, 1);
+		enemyObjects[i].init(&mEnemy, sqrt(2.0), Vector3(-5,.5,step*i - 3.8), Vector3(1,0,0), 3000.0f, 1);
 		enemyObjects[i].setInActive();
+	}
+
+	for (int i = 0; i < MAX_NUM_BULLETS; i++)
+	{
+		playerBullets[i].init(&mBullet, sqrt(2.0), Vector3(-5,.5,step*i - 3.8), Vector3(-5,0,0), 7000.0f, 1);
+		playerBullets[i].setInActive();
 	}
 
 	buildFX();
@@ -203,6 +213,24 @@ void generateEnemy(GameObject enemyObjects[], float dt) {
 	}
 }
 
+void shootBullet(GameObject playerBullets[], float dt, GameObject player)
+{
+	for (int i = 0; i < MAX_NUM_BULLETS; i++)
+	{
+		if (playerBullets[i].getActiveState())
+			continue;
+		else
+		{
+			D3DXVECTOR3 position = player.getPosition();
+			position.y = 0.5;
+			playerBullets[i].setActive();
+			playerBullets[i].setPosition(position);
+			return;
+		}
+	}
+}
+
+
 void ColoredCubeApp::updateScene(float dt)
 {
 	//Generate a block every three seconds
@@ -212,10 +240,17 @@ void ColoredCubeApp::updateScene(float dt)
 		generateEnemy(enemyObjects, dt);
 	}
 
+
 	Vector3 oldEnemyPositions[MAX_NUM_ENEMIES];
 	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
 	{
 		oldEnemyPositions[i] = enemyObjects[i].getPosition();
+	}
+
+	Vector3 oldBulletPositions[MAX_NUM_BULLETS];
+	for (int i = 0; i < MAX_NUM_BULLETS; i++)
+	{
+		oldBulletPositions[i] = playerBullets[i].getPosition();
 	}
 
 
@@ -228,8 +263,17 @@ void ColoredCubeApp::updateScene(float dt)
 		enemyObjects[i].update(dt);
 	}
 
+	for (int i = 0; i < MAX_NUM_BULLETS; i++)
+	{
+		playerBullets[i].update(dt);
+	}
+
 	if(GetAsyncKeyState('A') & 0x8000)  direction.z = -1.0f;
 	if(GetAsyncKeyState('D') & 0x8000)	direction.z = +1.0f;
+
+	if(GetAsyncKeyState(VK_SPACE) & 0x8000)
+		shootBullet(playerBullets, dt, gameObject1);
+
 	// commenting below locks the cube in one dimension
 	//if(GetAsyncKeyState('W') & 0x8000)	direction.x = -1.0f;
 	//if(GetAsyncKeyState('S') & 0x8000)	direction.x = +1.0f;
@@ -257,8 +301,6 @@ void ColoredCubeApp::updateScene(float dt)
 		}
 
 	}
-
-
 
 
 
@@ -332,6 +374,13 @@ void ColoredCubeApp::drawScene()
 		enemyObjects[i].draw();
 	}
 
+	for (int i = 0; i < MAX_NUM_BULLETS; i++)
+	{
+		mWVP = enemyObjects[i].getWorldMatrix()  *mView*mProj;
+		mfxWVPVar->SetMatrix((float*)&mWVP);
+		playerBullets[i].setMTech(mTech);
+		playerBullets[i].draw();
+	}
 
 	// We specify DT_NOCLIP, so we do not care about width/height of the rect.
 	RECT R = {5, 5, 0, 0};

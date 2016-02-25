@@ -5,6 +5,7 @@
 #include "d3dUtil.h"
 
 #include "Box.h"
+#include "Bullet.h"
 #include "constants.h"
 
 class GameObject
