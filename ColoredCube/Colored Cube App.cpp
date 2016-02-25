@@ -114,19 +114,21 @@ void ColoredCubeApp::initApp()
 	//input->initialize(getMainWnd(), false);
 	//audio->initialize();
 
-
+	float boxScale = 0.5f;
 	mAxes.init(md3dDevice, 1.0f);
-	mBox.init(md3dDevice, .5f);
+	mBox.init(md3dDevice, boxScale);
 	mLine.init(md3dDevice, 1.0f);
 	//mTriangle.init(md3dDevice, 1.0f);
 	mQuad.init(md3dDevice, 10.0f);
 
 	gameObject1.init(&mBox, sqrt(2.0f), Vector3(6,.5,0), Vector3(0,0,0), 5000.0f,1.0f);
+	gameObject1.setRadius(gameObject1.getRadius()*boxScale);
 
 	int step = 2;
 	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
 	{
 		enemyObjects[i].init(&mBox, sqrt(2.0), Vector3(-5,.5,step*i - 3.8), Vector3(1,0,0), 3000.0f, 1);
+		enemyObjects[i].setRadius(enemyObjects[i].getRadius()*boxScale);
 		enemyObjects[i].setInActive();
 	}
 
