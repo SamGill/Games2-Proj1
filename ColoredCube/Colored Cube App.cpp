@@ -21,6 +21,7 @@
 #include "audio.h"
 #include "c:\Program Files (x86)\Windows Kits\8.0\Include\shared\winerror.h"
 #include "TimeBuffer.h"
+#include <sstream>
 
 class ColoredCubeApp : public D3DApp
 {
@@ -69,6 +70,9 @@ private:
 
 	float mTheta;
 	float mPhi;
+
+	int score;
+	std::wstring finalScore;
 };
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
@@ -116,21 +120,30 @@ void ColoredCubeApp::initApp()
 	//input->initialize(getMainWnd(), false);
 	//audio->initialize();
 
+	float boxScale = 0.5f;
+	float collisionFixFactor = 1.1f;
 
+	// increments when you run into a cube // just for now
+	score = 0;
 	mAxes.init(md3dDevice, 1.0f);
 	mEnemy.init(md3dDevice, .5f, RED);
 	mPlayer.init(md3dDevice, .5f, BLUE);
 	mBullet.init(md3dDevice, .25f, BLACK);
+	//mBox.init(md3dDevice, boxScale);
 	mLine.init(md3dDevice, 1.0f);
 	//mTriangle.init(md3dDevice, 1.0f);
 	mQuad.init(md3dDevice, 10.0f);
 
 	gameObject1.init(&mPlayer, sqrt(2.0f), Vector3(6,.5,0), Vector3(0,0,0), 5000.0f,1.0f);
+	//gameObject1.init(&mBox, sqrt(2.0f), Vector3(6,.5,0), Vector3(0,0,0), 5000.0f,1.0f);
+	gameObject1.setRadius(gameObject1.getRadius()*boxScale*collisionFixFactor);
 
 	int step = 2;
 	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
 	{
 		enemyObjects[i].init(&mEnemy, sqrt(2.0), Vector3(-5,.5,step*i - 3.8), Vector3(1,0,0), 3000.0f, 1);
+		//enemyObjects[i].init(&mBox, sqrt(2.0), Vector3(-5,.5,step*i - 3.8), Vector3(1,0,0), 3000.0f, 1);
+		enemyObjects[i].setRadius(enemyObjects[i].getRadius()*boxScale * collisionFixFactor);
 		enemyObjects[i].setInActive();
 	}
 
@@ -187,8 +200,6 @@ void generateEnemy(GameObject enemyObjects[], float dt) {
 			int leftOrRightSide = 1;
 			if (rand()%2)
 				leftOrRightSide = -1;
-				
-
 
 			horizontalStartingPoint *= leftOrRightSide;
 
@@ -271,7 +282,7 @@ void ColoredCubeApp::updateScene(float dt)
 	if(GetAsyncKeyState('A') & 0x8000)  direction.z = -1.0f;
 	if(GetAsyncKeyState('D') & 0x8000)	direction.z = +1.0f;
 
-	if(GetAsyncKeyState(VK_SPACE) & 0x8000)
+	if(GetAsyncKeyState(VK_SHIFT) & 0x8000)
 		shootBullet(playerBullets, dt, gameObject1);
 
 	// commenting below locks the cube in one dimension
@@ -298,11 +309,10 @@ void ColoredCubeApp::updateScene(float dt)
 		{
 			audio->playCue(BEEP1);
 			enemyObjects[i].setInActive();
+			score++;
 		}
 
 	}
-
-
 
 	D3DXMATRIX w;
 
@@ -374,6 +384,7 @@ void ColoredCubeApp::drawScene()
 		enemyObjects[i].draw();
 	}
 
+
 	for (int i = 0; i < MAX_NUM_BULLETS; i++)
 	{
 		mWVP = enemyObjects[i].getWorldMatrix()  *mView*mProj;
@@ -382,9 +393,17 @@ void ColoredCubeApp::drawScene()
 		playerBullets[i].draw();
 	}
 
+	std::wostringstream scoreString;   
+	scoreString.precision(6);
+	scoreString << score;
+	finalScore = scoreString.str();
+
 	// We specify DT_NOCLIP, so we do not care about width/height of the rect.
 	RECT R = {5, 5, 0, 0};
+	RECT R2 = {GAME_WIDTH/2 + 50, GAME_HEIGHT + 65, 0, 0};
 	mFont->DrawText(0, mFrameStats.c_str(), -1, &R, DT_NOCLIP, BLACK);
+	scoreFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, BLACK);
+
 
 	mSwapChain->Present(0, 0);
 }
