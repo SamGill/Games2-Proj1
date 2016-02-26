@@ -141,7 +141,7 @@ const char GAMEOVER_IMAGE[] = "pictures\\MyGameOver.jpg";
 #define ToDegree D3DXToDegree
 
 const unsigned int MAX_NUM_ENEMIES = 5;
-const unsigned int MAX_NUM_BULLETS = 10;
+const unsigned int MAX_NUM_BULLETS = 20;
 const int PLAYER_Z_RANGE = 2;
 
 

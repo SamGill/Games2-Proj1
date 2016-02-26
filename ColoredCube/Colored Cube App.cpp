@@ -26,6 +26,7 @@
 
 #include <sstream>
 
+int currentBullet;
 
 class ColoredCubeApp : public D3DApp
 {
@@ -83,6 +84,8 @@ private:
 
 	int score;
 	std::wstring finalScore;
+
+	bool shotRelease;
 };
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
@@ -134,6 +137,8 @@ void ColoredCubeApp::initApp()
 
 	float boxScale = 0.5f;
 	float collisionFixFactor = 1.1f;
+	currentBullet = 0;
+	shotRelease = true;
 
 	// increments when you run into a cube // just for now
 	score = 0;
@@ -238,7 +243,7 @@ void generateEnemy(GameObject enemyObjects[], float dt) {
 
 void shootBullet(GameObject playerBullets[], float dt, GameObject player)
 {
-	for (int i = 0; i < MAX_NUM_BULLETS; i++)
+	/*for (int i = 0; i < MAX_NUM_BULLETS; i++)
 	{
 		if (playerBullets[i].getActiveState())
 			continue;
@@ -250,7 +255,16 @@ void shootBullet(GameObject playerBullets[], float dt, GameObject player)
 			playerBullets[i].setPosition(position);
 			return;
 		}
-	}
+	}*/
+
+	D3DXVECTOR3 position = player.getPosition();
+	position.y = 0.5;
+	playerBullets[currentBullet].setActive();
+	playerBullets[currentBullet].setPosition(position);
+	currentBullet++;
+	if(currentBullet >= MAX_NUM_BULLETS) currentBullet = 0;
+	return;
+
 }
 
 
@@ -304,9 +318,17 @@ void ColoredCubeApp::updateScene(float dt)
 		{
 			playerBullets[i].update(dt);
 		}
-			
-		if(GetAsyncKeyState(VK_SHIFT) & 0x8000)
-			shootBullet(playerBullets, dt, gameObject1);
+
+		
+		if(GetAsyncKeyState(VK_RETURN) & 0x8000){
+			if(shotRelease){
+				shootBullet(playerBullets, dt, gameObject1);
+				shotRelease = false;
+			}
+		}
+
+		if(!(GetAsyncKeyState(VK_RETURN) & 0x8000)) shotRelease = true;
+
 
 		// commenting below locks the cube in one dimension
 		//if(GetAsyncKeyState('W') & 0x8000)	direction.x = -1.0f;
