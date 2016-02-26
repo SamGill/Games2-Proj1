@@ -95,7 +95,11 @@
     <ClInclude Include="TimeBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+<<<<<<< HEAD
     <ClInclude Include="Bullet.h">
+=======
+    <ClInclude Include="GameStateManager.h">
+>>>>>>> origin/master
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
