@@ -525,12 +525,12 @@ void ColoredCubeApp::drawScene()
 }
 
 void ColoredCubeApp::restartGame() {
-	gameObject1.init(&mBox, sqrt(2.0f), Vector3(6,.5,0), Vector3(0,0,0), 5000.0f,1.0f);
+	gameObject1.setPosition(Vector3(6,.5,0));
+	gameObject1.setVelocity(Vector3(0,0,0));
 
 	int step = 2;
 	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
 	{
-		enemyObjects[i].init(&mBox, sqrt(2.0), Vector3(-5,.5,step*i - 3.8), Vector3(1,0,0), 3000.0f, 1);
 		enemyObjects[i].setInActive();
 	}
 
