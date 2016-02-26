@@ -161,7 +161,7 @@ void ColoredCubeApp::initApp()
 
 	for (int i = 0; i < MAX_NUM_BULLETS; i++)
 	{
-		playerBullets[i].init(&mBullet, sqrt(2.0), Vector3(-5,.5,step*i - 3.8), Vector3(-5,0,0), 7000.0f, 1);
+		playerBullets[i].init(&mBullet, sqrt(2.0), Vector3(0,0,0), Vector3(-5,0,0), 7000.0f, 1);
 		playerBullets[i].setInActive();
 	}
 
@@ -298,115 +298,136 @@ void ColoredCubeApp::updateScene(float dt)
 			timeBuffer.resetClock();
 
 			generateEnemy(enemyObjects, dt);
-	}
+		}
 
-	for (int i = 0; i < MAX_NUM_BULLETS; i++)
-	{
-		playerBullets[i].update(dt);
-	}
-	if(GetAsyncKeyState(VK_SHIFT) & 0x8000)
-		shootBullet(playerBullets, dt, gameObject1);
+		for (int i = 0; i < MAX_NUM_BULLETS; i++)
+		{
+			playerBullets[i].update(dt);
+		}
+			
+		if(GetAsyncKeyState(VK_SHIFT) & 0x8000)
+			shootBullet(playerBullets, dt, gameObject1);
 
-	// commenting below locks the cube in one dimension
-	//if(GetAsyncKeyState('W') & 0x8000)	direction.x = -1.0f;
-	//if(GetAsyncKeyState('S') & 0x8000)	direction.x = +1.0f;
-			Vector3 oldEnemyPositions[MAX_NUM_ENEMIES];
-			for (int i = 0; i < MAX_NUM_ENEMIES; i++)
+		// commenting below locks the cube in one dimension
+		//if(GetAsyncKeyState('W') & 0x8000)	direction.x = -1.0f;
+		//if(GetAsyncKeyState('S') & 0x8000)	direction.x = +1.0f;
+		Vector3 oldEnemyPositions[MAX_NUM_ENEMIES];
+		for (int i = 0; i < MAX_NUM_ENEMIES; i++)
+		{
+			oldEnemyPositions[i] = enemyObjects[i].getPosition();
+		}
+
+		Vector3 direction(0, 0, 0);
+		Vector3 oldposition = gameObject1.getPosition();
+
+		D3DApp::updateScene(dt);
+		gameObject1.update(dt);
+		for (int i = 0; i < MAX_NUM_ENEMIES; i++) {
+			enemyObjects[i].update(dt);
+		}
+
+		if(GetAsyncKeyState('A') & 0x8000)  direction.z = -1.0f;
+		if(GetAsyncKeyState('D') & 0x8000)	direction.z = +1.0f;
+		// commenting below locks the cube in one dimension
+		//if(GetAsyncKeyState('W') & 0x8000)	direction.x = -1.0f;
+		//if(GetAsyncKeyState('S') & 0x8000)	direction.x = +1.0f;
+
+		D3DXVec3Normalize(&direction, &direction);
+
+		for (int i = 0; i < MAX_NUM_ENEMIES; i++)
+		{
+			//if they collide and are active
+			if(gameObject1.collided(&enemyObjects[i]) && enemyObjects[i].getActiveState())
 			{
-				oldEnemyPositions[i] = enemyObjects[i].getPosition();
+				audio->playCue(BEEP1);
+				enemyObjects[i].setInActive();
+				//score++;
+				gsm->setGameState(GameStateManager::END_GAME);
 			}
+		}
 
-
-			Vector3 direction(0, 0, 0);
-			Vector3 oldposition = gameObject1.getPosition();
-
-			D3DApp::updateScene(dt);
-			gameObject1.update(dt);
-			for (int i = 0; i < MAX_NUM_ENEMIES; i++) {
-				enemyObjects[i].update(dt);
-			}
-
-			if(GetAsyncKeyState('A') & 0x8000)  direction.z = -1.0f;
-			if(GetAsyncKeyState('D') & 0x8000)	direction.z = +1.0f;
-			// commenting below locks the cube in one dimension
-			//if(GetAsyncKeyState('W') & 0x8000)	direction.x = -1.0f;
-			//if(GetAsyncKeyState('S') & 0x8000)	direction.x = +1.0f;
-
-			D3DXVec3Normalize(&direction, &direction);
-
-			for (int i = 0; i < MAX_NUM_ENEMIES; i++)
+		for (int i = 0; i < MAX_NUM_BULLETS; i++)
+		{
+			for (int j = 0; j < MAX_NUM_ENEMIES; j++)
 			{
-				//if they collide and are active
-				if(gameObject1.collided(&enemyObjects[i]) && enemyObjects[i].getActiveState())
+				if(playerBullets[i].collided(&enemyObjects[j]) && enemyObjects[j].getActiveState())
 				{
-					audio->playCue(BEEP1);
-					enemyObjects[i].setInActive();
+					enemyObjects[j].setInActive();
+					playerBullets[i].setInActive();
 					score++;
-					gsm->setGameState(GameStateManager::END_GAME);
 				}
 			}
-
-			gameObject1.setVelocity( direction * gameObject1.getSpeed() * dt);
-
-			if (gameObject1.getPosition().z < -PLAYER_Z_RANGE){
-				gameObject1.setPosition(Vector3(oldposition.x, oldposition.y, -PLAYER_Z_RANGE));
-			}
-			if (gameObject1.getPosition().z > PLAYER_Z_RANGE){
-				gameObject1.setPosition(Vector3(oldposition.x, oldposition.y, PLAYER_Z_RANGE));
-			}
-
-			D3DXMATRIX w;
-
-			D3DXMatrixTranslation(&w, 2, 2, 0);
-			mfxWVPVar->SetMatrix(w);
-
-			// Restrict the angle mPhi.
-			if( mPhi < 0.1f )	mPhi = 0.1f;
-			if( mPhi > PI-0.1f)	mPhi = PI-0.1f;
-
-			// Convert Spherical to Cartesian coordinates: mPhi measured from +y
-			// and mTheta measured counterclockwise from -z.
-			/*float x =  5.0f*sinf(mPhi)*sinf(mTheta);
-			float z =  -5.0f*sinf(mPhi)*cosf(mTheta);
-			float y =  5.0f*cosf(mPhi);*/
-
-			// Build the view matrix.
-			D3DXVECTOR3 pos(10.0f, 2.0f, 0.0f);
-			D3DXVECTOR3 target(0.0f, 0.0f, 0.0f);
-			D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
-			D3DXMatrixLookAtLH(&mView, &pos, &target, &up);
 		}
+
+
+		gameObject1.setVelocity( direction * gameObject1.getSpeed() * dt);
+
+		if (gameObject1.getPosition().z < -PLAYER_Z_RANGE){
+			gameObject1.setPosition(Vector3(oldposition.x, oldposition.y, -PLAYER_Z_RANGE));
+		}
+		if (gameObject1.getPosition().z > PLAYER_Z_RANGE){
+			gameObject1.setPosition(Vector3(oldposition.x, oldposition.y, PLAYER_Z_RANGE));
+		}
+
+		//Destroys bullet if too far away
+		for (int i = 0; i < MAX_NUM_BULLETS; i++)
+		{
+			if(playerBullets[i].getPosition().x < -10 && playerBullets[i].getActiveState())
+				playerBullets[i].setInActive();
+		}
+
+		D3DXMATRIX w;
+
+		D3DXMatrixTranslation(&w, 2, 2, 0);
+		mfxWVPVar->SetMatrix(w);
+
+		// Restrict the angle mPhi.
+		if( mPhi < 0.1f )	mPhi = 0.1f;
+		if( mPhi > PI-0.1f)	mPhi = PI-0.1f;
+
+		// Convert Spherical to Cartesian coordinates: mPhi measured from +y
+		// and mTheta measured counterclockwise from -z.
+		/*float x =  5.0f*sinf(mPhi)*sinf(mTheta);
+		float z =  -5.0f*sinf(mPhi)*cosf(mTheta);
+		float y =  5.0f*cosf(mPhi);*/
+
+		// Build the view matrix.
+		D3DXVECTOR3 pos(10.0f, 2.0f, 0.0f);
+		D3DXVECTOR3 target(0.0f, 0.0f, 0.0f);
+		D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
+		D3DXMatrixLookAtLH(&mView, &pos, &target, &up);
+	}
 
 
 	case GameStateManager::END_GAME:
-		{
-			//D3DApp::updateScene(dt);
-			//gameObject1.update(dt);
-			D3DXMATRIX w;
+	{
+		//D3DApp::updateScene(dt);
+		//gameObject1.update(dt);
+		D3DXMATRIX w;
 
-			D3DXMatrixTranslation(&w, 2, 2, 0);
-			mfxWVPVar->SetMatrix(w);
+		D3DXMatrixTranslation(&w, 2, 2, 0);
+		mfxWVPVar->SetMatrix(w);
 
-			// Build the view matrix.
-			D3DXVECTOR3 pos(10.0f, 2.0f, 0.0f);
-			D3DXVECTOR3 target(0.0f, 0.0f, 0.0f);
-			D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
-			D3DXMatrixLookAtLH(&mView, &pos, &target, &up);
+		// Build the view matrix.
+		D3DXVECTOR3 pos(10.0f, 2.0f, 0.0f);
+		D3DXVECTOR3 target(0.0f, 0.0f, 0.0f);
+		D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
+		D3DXMatrixLookAtLH(&mView, &pos, &target, &up);
 
-			if(GetAsyncKeyState(VK_SPACE) & 0x8000 && gsm->getGameState() != GameStateManager::IN_GAME) {
-				restartGame();
-				gsm->setGameState(GameStateManager::IN_GAME);
-			}
-
-
-			break;
+		if(GetAsyncKeyState(VK_SPACE) & 0x8000 && gsm->getGameState() != GameStateManager::IN_GAME) {
+			restartGame();
+			gsm->setGameState(GameStateManager::IN_GAME);
 		}
 
 
-	default: {
-		throw(GameError(gameErrorNS::FATAL_ERROR, "Game State Error"));
 		break;
-			 }
+	}
+
+
+		default: {
+			throw(GameError(gameErrorNS::FATAL_ERROR, "Game State Error"));
+			break;
+		}
 	}
 }
 
@@ -471,7 +492,6 @@ void ColoredCubeApp::drawScene()
 	gameObject1.setMTech(mTech);
 	gameObject1.draw();
 
-
 	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
 	{
 		mWVP = enemyObjects[i].getWorldMatrix()  *mView*mProj;
@@ -483,7 +503,7 @@ void ColoredCubeApp::drawScene()
 
 	for (int i = 0; i < MAX_NUM_BULLETS; i++)
 	{
-		mWVP = enemyObjects[i].getWorldMatrix()  *mView*mProj;
+		mWVP = playerBullets[i].getWorldMatrix()  *mView*mProj;
 		mfxWVPVar->SetMatrix((float*)&mWVP);
 		playerBullets[i].setMTech(mTech);
 		playerBullets[i].draw();
