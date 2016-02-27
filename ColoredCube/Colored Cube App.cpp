@@ -30,10 +30,7 @@ int currentBullet;
 
 class ColoredCubeApp : public D3DApp
 {
-private:
-	Input* input;
-	Audio* audio;
-	TimeBuffer timeBuffer;
+
 public:
 	ColoredCubeApp(HINSTANCE hInstance);
 	~ColoredCubeApp();
@@ -46,12 +43,19 @@ public:
 
 	//Input* getInput() {   return input;}
 	//Audio* getAudio() {   return audio;}
-
+	void shootBullet(GameObject playerBullets[], float dt, GameObject player);
 private:
+
 	void buildFX();
 	void buildVertexLayouts();
+		
+	Input* input;
+	Audio* audio;
 
-private:
+	TimeBuffer enemyBuffer;
+	TimeBuffer shotBuffer;
+
+
 	Axes mAxes;
 	Box mEnemy, mPlayer, mBullet;
 	Box mBox;
@@ -190,7 +194,8 @@ void ColoredCubeApp::initApp()
 		}*/
 	}
 
-	timeBuffer.resetClock();
+	enemyBuffer.resetClock();
+	shotBuffer.resetClock();
 
 }
 
@@ -241,8 +246,13 @@ void generateEnemy(GameObject enemyObjects[], float dt) {
 	}
 }
 
-void shootBullet(GameObject playerBullets[], float dt, GameObject player)
+void ColoredCubeApp::shootBullet(GameObject playerBullets[], float dt, GameObject player)
 {
+
+	if (shotBuffer.elapsedTime() < 1)
+		return;
+	else
+		shotBuffer.resetClock();
 	/*for (int i = 0; i < MAX_NUM_BULLETS; i++)
 	{
 		if (playerBullets[i].getActiveState())
@@ -259,12 +269,14 @@ void shootBullet(GameObject playerBullets[], float dt, GameObject player)
 
 	D3DXVECTOR3 position = player.getPosition();
 	position.y = 0.5;
+
 	playerBullets[currentBullet].setActive();
 	playerBullets[currentBullet].setPosition(position);
+
 	currentBullet++;
 	if(currentBullet >= MAX_NUM_BULLETS) currentBullet = 0;
-	return;
 
+	return;
 }
 
 
@@ -308,8 +320,8 @@ void ColoredCubeApp::updateScene(float dt)
 	case GameStateManager::IN_GAME:
 	{
 		//Generate a block every three seconds
-		if (timeBuffer.elapsedTime() > 2) {
-			timeBuffer.resetClock();
+		if (enemyBuffer.elapsedTime() > 2) {
+			enemyBuffer.resetClock();
 
 			generateEnemy(enemyObjects, dt);
 		}
@@ -323,11 +335,11 @@ void ColoredCubeApp::updateScene(float dt)
 		if(GetAsyncKeyState(VK_RETURN) & 0x8000){
 			if(shotRelease){
 				shootBullet(playerBullets, dt, gameObject1);
-				shotRelease = false;
+				//shotRelease = false;
 			}
 		}
 
-		if(!(GetAsyncKeyState(VK_RETURN) & 0x8000)) shotRelease = true;
+		//if(!(GetAsyncKeyState(VK_RETURN) & 0x8000)) shotRelease = true;
 
 
 		// commenting below locks the cube in one dimension
