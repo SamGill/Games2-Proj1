@@ -139,6 +139,7 @@ const char GAMEOVER_IMAGE[] = "pictures\\MyGameOver.jpg";
 #define RotateZ D3DXMatrixRotationZ
 #define ToRadian D3DXToRadian
 #define ToDegree D3DXToDegree
+#define Transform D3DXVec3TransformCoord
 
 const unsigned int MAX_NUM_ENEMIES = 5;
 const unsigned int MAX_NUM_BULLETS = 20;
