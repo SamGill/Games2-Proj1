@@ -35,6 +35,9 @@ public:
 	void setCameraMoveRight (bool b) {canCameraMoveRight = b;}
 	void setGsm(GameStateManager* gs) {gsm = gs;}
 	void restart();
+	void cameraShake(float dt);
+	void stopCameraShake() {cameraShaking = false;}
+	bool isCameraShaking() {return cameraShaking;}
 private:
 	Matrix mView;
 	Matrix mProj;
@@ -54,6 +57,8 @@ private:
 	Vector3 maxLookAt;
 	Vector3 minLookAt;
 
+	bool cameraShaking;
+	float shakeTimer;
 	bool canCameraMoveLeft;
 	bool canCameraMoveRight;
 	GameStateManager* gsm;
