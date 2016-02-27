@@ -23,6 +23,7 @@
 #include "TimeBuffer.h"
 
 #include "GameStateManager.h"
+#include "Camera.h"
 
 #include <sstream>
 
@@ -83,6 +84,13 @@ private:
 	D3DXMATRIX mProj;
 	D3DXMATRIX mWVP;
 
+	// Camera stuff
+	Vector3 cameraPos;
+	Vector3 lookAt;
+
+	//Camera Object stuff
+	Camera camera;
+
 	float mTheta;
 	float mPhi;
 
@@ -119,6 +127,7 @@ ColoredCubeApp::ColoredCubeApp(HINSTANCE hInstance) : D3DApp(hInstance), mFX(0),
 	//audio = new Audio();
 
 	gsm = new GameStateManager();
+	camera.setGsm(gsm);
 
 }
 
@@ -197,12 +206,23 @@ void ColoredCubeApp::initApp()
 	enemyBuffer.resetClock();
 	shotBuffer.resetClock();
 
+	D3DXVECTOR3 pos(10.0f, 2.0f, 0.0f);
+	D3DXVECTOR3 target(0.0f, 0.0f, 0.0f);
+	D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
+
+	//Camera Object
+	camera.init(pos, Vector3(0,0,0), Vector3(0,0,0));
+	camera.setPerspective();
+	// camera
+	cameraPos = pos;
+
 }
 
 void ColoredCubeApp::onResize()
 {
 	D3DApp::onResize();
-
+	//Camera Object
+	camera.setPerspective();
 	float aspect = (float)mClientWidth/mClientHeight;
 	D3DXMatrixPerspectiveFovLH(&mProj, 0.25f*PI, aspect, 1.0f, 1000.0f);
 }
@@ -292,16 +312,14 @@ void ColoredCubeApp::updateScene(float dt)
 		mfxWVPVar->SetMatrix(w);
 
 		// Build the view matrix.
-		D3DXVECTOR3 pos(10.0f, 2.0f, 0.0f);
+		/*D3DXVECTOR3 pos(10.0f, 2.0f, 0.0f);
 		D3DXVECTOR3 target(0.0f, 0.0f, 0.0f);
 		D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
-		D3DXMatrixLookAtLH(&mView, &pos, &target, &up);
+		D3DXMatrixLookAtLH(&mView, &pos, &target, &up);*/
 
 		if(GetAsyncKeyState(VK_SPACE) & 0x8000 && gsm->getGameState() != GameStateManager::IN_GAME) {
 			gsm->setGameState(GameStateManager::IN_GAME);
 		}
-
-		break;
 
 		Vector3 oldEnemyPositions[MAX_NUM_ENEMIES];
 		for (int i = 0; i < MAX_NUM_ENEMIES; i++)
@@ -314,6 +332,13 @@ void ColoredCubeApp::updateScene(float dt)
 		{
 			oldBulletPositions[i] = playerBullets[i].getPosition();
 		}
+
+		//Camera Object
+		camera.update(dt);
+
+		break;
+
+		
 
 	}
 
@@ -341,10 +366,6 @@ void ColoredCubeApp::updateScene(float dt)
 
 		//if(!(GetAsyncKeyState(VK_RETURN) & 0x8000)) shotRelease = true;
 
-
-		// commenting below locks the cube in one dimension
-		//if(GetAsyncKeyState('W') & 0x8000)	direction.x = -1.0f;
-		//if(GetAsyncKeyState('S') & 0x8000)	direction.x = +1.0f;
 		Vector3 oldEnemyPositions[MAX_NUM_ENEMIES];
 		for (int i = 0; i < MAX_NUM_ENEMIES; i++)
 		{
@@ -360,11 +381,8 @@ void ColoredCubeApp::updateScene(float dt)
 			enemyObjects[i].update(dt);
 		}
 
-		if(GetAsyncKeyState('A') & 0x8000)  direction.z = -1.0f;
-		if(GetAsyncKeyState('D') & 0x8000)	direction.z = +1.0f;
-		// commenting below locks the cube in one dimension
-		//if(GetAsyncKeyState('W') & 0x8000)	direction.x = -1.0f;
-		//if(GetAsyncKeyState('S') & 0x8000)	direction.x = +1.0f;
+		if((GetAsyncKeyState('A') & 0x8000) && !(GetAsyncKeyState('D') & 0x8000))  direction.z = -1.0f;
+		if((GetAsyncKeyState('D') & 0x8000) && !(GetAsyncKeyState('A') & 0x8000))  direction.z = +1.0f;
 
 		D3DXVec3Normalize(&direction, &direction);
 
@@ -398,9 +416,17 @@ void ColoredCubeApp::updateScene(float dt)
 
 		if (gameObject1.getPosition().z < -PLAYER_Z_RANGE){
 			gameObject1.setPosition(Vector3(oldposition.x, oldposition.y, -PLAYER_Z_RANGE));
+			camera.setCameraMoveLeft(false);
+			camera.setCameraMoveRight(true);
 		}
-		if (gameObject1.getPosition().z > PLAYER_Z_RANGE){
+		else if (gameObject1.getPosition().z > PLAYER_Z_RANGE){
 			gameObject1.setPosition(Vector3(oldposition.x, oldposition.y, PLAYER_Z_RANGE));
+			camera.setCameraMoveRight(false);
+			camera.setCameraMoveLeft(true);
+		}
+		else {
+			camera.setCameraMoveRight(true);
+			camera.setCameraMoveLeft(true);
 		}
 
 		//Destroys bullet if too far away
@@ -415,21 +441,12 @@ void ColoredCubeApp::updateScene(float dt)
 		D3DXMatrixTranslation(&w, 2, 2, 0);
 		mfxWVPVar->SetMatrix(w);
 
-		// Restrict the angle mPhi.
-		if( mPhi < 0.1f )	mPhi = 0.1f;
-		if( mPhi > PI-0.1f)	mPhi = PI-0.1f;
+		//Camera Object
+		camera.update(dt);
 
-		// Convert Spherical to Cartesian coordinates: mPhi measured from +y
-		// and mTheta measured counterclockwise from -z.
-		/*float x =  5.0f*sinf(mPhi)*sinf(mTheta);
-		float z =  -5.0f*sinf(mPhi)*cosf(mTheta);
-		float y =  5.0f*cosf(mPhi);*/
-
-		// Build the view matrix.
-		D3DXVECTOR3 pos(10.0f, 2.0f, 0.0f);
-		D3DXVECTOR3 target(0.0f, 0.0f, 0.0f);
-		D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
-		D3DXMatrixLookAtLH(&mView, &pos, &target, &up);
+		//Get Camera viewMatrix
+		mView = camera.getViewMatrix();
+		mProj = camera.getProjectionMatrix();
 	}
 
 
@@ -442,17 +459,19 @@ void ColoredCubeApp::updateScene(float dt)
 		D3DXMatrixTranslation(&w, 2, 2, 0);
 		mfxWVPVar->SetMatrix(w);
 
-		// Build the view matrix.
-		D3DXVECTOR3 pos(10.0f, 2.0f, 0.0f);
-		D3DXVECTOR3 target(0.0f, 0.0f, 0.0f);
-		D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
-		D3DXMatrixLookAtLH(&mView, &pos, &target, &up);
+		//// Build the view matrix.
+		//D3DXVECTOR3 pos(10.0f, 2.0f, 0.0f);
+		//D3DXVECTOR3 target(0.0f, 0.0f, 0.0f);
+		//D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
+		//D3DXMatrixLookAtLH(&mView, &pos, &target, &up);
 
 		if(GetAsyncKeyState(VK_SPACE) & 0x8000 && gsm->getGameState() != GameStateManager::IN_GAME) {
 			restartGame();
 			gsm->setGameState(GameStateManager::IN_GAME);
 		}
 
+		//Camera Object
+		camera.update(dt);
 
 		break;
 	}
@@ -502,7 +521,9 @@ void ColoredCubeApp::drawScene()
 	md3dDevice->IASetInputLayout(mVertexLayout);
 	md3dDevice->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-
+	//Get Camera viewMatrix
+	 mView = camera.getViewMatrix();
+	 mProj = camera.getProjectionMatrix();
 
 	// set constants
 	mWVP = mView*mProj;
@@ -567,6 +588,12 @@ void ColoredCubeApp::restartGame() {
 	{
 		enemyObjects[i].setInActive();
 	}
+
+	//Camera Object
+	D3DXVECTOR3 pos(10.0f, 2.0f, 0.0);
+	camera.restart();
+	// camera
+	cameraPos = pos;
 
 	score = 0;
 }
