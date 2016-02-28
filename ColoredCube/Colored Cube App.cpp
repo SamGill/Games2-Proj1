@@ -24,6 +24,7 @@
 
 #include "GameStateManager.h"
 #include "Camera.h"
+#include "point.h"
 
 #include <sstream>
 
@@ -41,6 +42,7 @@ public:
 	void updateScene(float dt);
 	void drawScene();
 	void restartGame();
+	void runExplosion(Vector3 pos);
 
 	//Input* getInput() {   return input;}
 	//Audio* getAudio() {   return audio;}
@@ -60,6 +62,7 @@ private:
 	Axes mAxes;
 	Box mEnemy, mPlayer, mBullet;
 	Box mBox;
+	Box particleBox;
 
 	GameStateManager* gsm;
 
@@ -70,8 +73,8 @@ private:
 	GameObject gameObject1;
 
 	GameObject enemyObjects[MAX_NUM_ENEMIES];
-
 	GameObject playerBullets[MAX_NUM_BULLETS];
+	GameObject particles[MAX_NUM_EXP_PARTICLES];
 
 	ID3D10Effect* mFX;
 	ID3D10EffectTechnique* mTech;
@@ -98,6 +101,8 @@ private:
 	std::wstring finalScore;
 
 	bool shotRelease;
+	float explosionTimer;
+	bool explosionRunning;
 };
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
@@ -151,6 +156,8 @@ void ColoredCubeApp::initApp()
 	float boxScale = 0.5f;
 	float collisionFixFactor = 1.1f;
 	currentBullet = 0;
+	explosionTimer = 0;
+	explosionRunning = false;
 	shotRelease = true;
 
 	// increments when you run into a cube // just for now
@@ -159,6 +166,7 @@ void ColoredCubeApp::initApp()
 	mEnemy.init(md3dDevice, .5f, RED);
 	mPlayer.init(md3dDevice, .5f, BLUE);
 	mBullet.init(md3dDevice, .25f, D3DXCOLOR(0.0f, 1.0f, 0.0f, 0.0f));
+	particleBox.init(md3dDevice, .03f, GREEN);
 	//mBox.init(md3dDevice, boxScale);
 	mLine.init(md3dDevice, 1.0f);
 	//mTriangle.init(md3dDevice, 1.0f);
@@ -181,6 +189,12 @@ void ColoredCubeApp::initApp()
 	{
 		playerBullets[i].init(&mBullet, 0.5f, Vector3(0,0,0), Vector3(-5,0,0), 7000.0f, 1);
 		playerBullets[i].setInActive();
+	}
+
+	for (int i = 0; i < MAX_NUM_EXP_PARTICLES; i++)
+	{
+		particles[i].init(&particleBox, 0.5f, Vector3(0,0,0), Vector3(0,0,0), 7000.0f, 1);
+		particles[i].setInActive();
 	}
 
 	buildFX();
@@ -359,6 +373,23 @@ void ColoredCubeApp::updateScene(float dt)
 		}
 
 		
+		for (int i = 0; i < MAX_NUM_EXP_PARTICLES; i++)
+		{
+			particles[i].update(dt);
+		}
+
+		if(explosionRunning) explosionTimer += dt;
+
+		if (explosionTimer > .75){
+			explosionTimer = 0;
+			explosionRunning = false;
+			for (int i = 0; i < MAX_NUM_EXP_PARTICLES; i++)
+			{
+				particles[i].setInActive();
+			}
+		}
+
+		
 		if(GetAsyncKeyState(VK_RETURN) & 0x8000){
 			if(shotRelease){
 				shootBullet(playerBullets, dt, gameObject1);
@@ -407,6 +438,7 @@ void ColoredCubeApp::updateScene(float dt)
 			{
 				if(playerBullets[i].collided(&enemyObjects[j]) && enemyObjects[j].getActiveState())
 				{
+					runExplosion(playerBullets[i].getPosition());
 					enemyObjects[j].setInActive();
 					playerBullets[i].setInActive();
 					score++;
@@ -548,6 +580,7 @@ void ColoredCubeApp::drawScene()
 		mLine.draw();
 		//mTriangle.draw();
 		mQuad.draw();
+		particleBox.draw();
 	}
 
 	mWVP = gameObject1.getWorldMatrix()  *mView*mProj;
@@ -570,6 +603,14 @@ void ColoredCubeApp::drawScene()
 		mfxWVPVar->SetMatrix((float*)&mWVP);
 		playerBullets[i].setMTech(mTech);
 		playerBullets[i].draw();
+	}
+
+	for (int i = 0; i < MAX_NUM_EXP_PARTICLES; i++)
+	{
+		mWVP = particles[i].getWorldMatrix()  *mView*mProj;
+		mfxWVPVar->SetMatrix((float*)&mWVP);
+		particles[i].setMTech(mTech);
+		particles[i].draw();
 	}
 
 	if(gsm->getGameState() == GameStateManager::END_GAME){
@@ -660,4 +701,25 @@ void ColoredCubeApp::buildVertexLayouts()
 	mTech->GetPassByIndex(0)->GetDesc(&PassDesc);
 	HR(md3dDevice->CreateInputLayout(vertexDesc, 2, PassDesc.pIAInputSignature,
 		PassDesc.IAInputSignatureSize, &mVertexLayout));
+}
+
+void ColoredCubeApp::runExplosion(Vector3 pos){
+	for (int i = 0; i < MAX_NUM_EXP_PARTICLES; i++)
+	{
+		particles[i].setActive();
+
+		float rand1 = (rand() % 3);
+		if(rand() % 2 == 0) rand1 *= -1;
+		float rand2 = (rand() % 3);
+		if(rand() % 2 == 0) rand2 *= -1;
+		float rand3 = (rand() % 3);
+		if(rand() % 2 == 0) rand3 *= -1;
+
+		particles[i].setPosition(pos);
+		particles[i].setVelocity(D3DXVECTOR3(rand1,rand2,rand3));
+
+	}
+	explosionRunning = true;
+	
+
 }

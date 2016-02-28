@@ -100,6 +100,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Colored Cube App.cpp" />
     <ClCompile Include="d3dApp.cpp" />
+    <ClCompile Include="point.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="Input.cpp" />
@@ -119,6 +120,7 @@
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GameStateManager.h" />
     <ClInclude Include="GameTimer.h" />
+    <ClInclude Include="point.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Line.h" />
     <ClInclude Include="Quad.h" />

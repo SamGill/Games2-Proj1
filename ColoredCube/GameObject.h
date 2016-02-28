@@ -7,6 +7,7 @@
 #include "Box.h"
 #include "Bullet.h"
 #include "constants.h"
+#include "point.h";
 
 class GameObject
 {

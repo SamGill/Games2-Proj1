@@ -14,6 +14,7 @@
     <ClCompile Include="Quad.cpp" />
     <ClCompile Include="Triangle.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="point.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="audio.h" />
@@ -33,6 +34,7 @@
     <ClInclude Include="Triangle.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="point.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />
