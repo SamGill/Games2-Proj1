@@ -580,7 +580,7 @@ void ColoredCubeApp::drawScene()
 		mLine.draw();
 		//mTriangle.draw();
 		mQuad.draw();
-		particleBox.draw();
+		//particleBox.draw();
 	}
 
 	mWVP = gameObject1.getWorldMatrix()  *mView*mProj;
