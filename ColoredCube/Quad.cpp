@@ -26,10 +26,15 @@ void Quad::init(ID3D10Device* device, float scale)
 	// Create vertex buffer
     Vertex vertices[] =
     {
-		{D3DXVECTOR3( 1.0f, 0.0f, 1.0f ), BEACH_SAND},
+		{D3DXVECTOR3( 1.0f, 0.0f, 1.0f ), BLACK},
+		{D3DXVECTOR3( 1.0f, 0.0f, -1.0f), BLACK},
+		{D3DXVECTOR3(-1.0f, 0.0f, +1.0f), BLACK},
+		{D3DXVECTOR3(-1.0f, 0.0f, -1.0f), BLACK}
+
+		/*{D3DXVECTOR3( 1.0f, 0.0f, 1.0f ), BEACH_SAND},
 		{D3DXVECTOR3( 1.0f, 0.0f, -1.0f), BEACH_SAND},
 		{D3DXVECTOR3(-1.0f, 0.0f, +1.0f), BEACH_SAND},
-		{D3DXVECTOR3(-1.0f, 0.0f, -1.0f), BEACH_SAND},
+		{D3DXVECTOR3(-1.0f, 0.0f, -1.0f), BEACH_SAND},*/
     };
 
 	// Scale the Quad.

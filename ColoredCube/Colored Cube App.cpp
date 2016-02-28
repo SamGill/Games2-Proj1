@@ -158,7 +158,7 @@ void ColoredCubeApp::initApp()
 	mAxes.init(md3dDevice, 1.0f);
 	mEnemy.init(md3dDevice, .5f, RED);
 	mPlayer.init(md3dDevice, .5f, BLUE);
-	mBullet.init(md3dDevice, .25f, BLACK);
+	mBullet.init(md3dDevice, .25f, D3DXCOLOR(0.0f, 1.0f, 0.0f, 0.0f));
 	//mBox.init(md3dDevice, boxScale);
 	mLine.init(md3dDevice, 1.0f);
 	//mTriangle.init(md3dDevice, 1.0f);
@@ -581,7 +581,7 @@ void ColoredCubeApp::drawScene()
 	RECT R = {5, 5, 0, 0};
 	RECT R2 = {GAME_WIDTH/2 + 50, GAME_HEIGHT + 65, 0, 0};
 	mFont->DrawText(0, mFrameStats.c_str(), -1, &R, DT_NOCLIP, BLACK);
-	scoreFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, BLACK);
+	scoreFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, GREEN);
 
 
 	mSwapChain->Present(0, 0);
