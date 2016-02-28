@@ -179,7 +179,7 @@ void ColoredCubeApp::initApp()
 
 	for (int i = 0; i < MAX_NUM_BULLETS; i++)
 	{
-		playerBullets[i].init(&mBullet, sqrt(2.0), Vector3(0,0,0), Vector3(-5,0,0), 7000.0f, 1);
+		playerBullets[i].init(&mBullet, 0.5f, Vector3(0,0,0), Vector3(-5,0,0), 7000.0f, 1);
 		playerBullets[i].setInActive();
 	}
 
@@ -310,6 +310,8 @@ void ColoredCubeApp::updateScene(float dt)
 
 		D3DXMatrixTranslation(&w, 2, 2, 0);
 		mfxWVPVar->SetMatrix(w);
+
+		score = 0;
 
 		// Build the view matrix.
 		/*D3DXVECTOR3 pos(10.0f, 2.0f, 0.0f);

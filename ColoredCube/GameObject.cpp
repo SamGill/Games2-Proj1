@@ -50,10 +50,13 @@ void GameObject::update(float dt)
 
 bool GameObject::collided(GameObject *gameObject)
 {
-	Vector3 diff = position - gameObject->getPosition();
-	float length = D3DXVec3LengthSq(&diff);
-	float radii = radiusSquared + gameObject->getRadiusSquare();
-	if (length <= radii)
-		return true;
+	if (getActiveState() && gameObject ->getActiveState()){
+
+		Vector3 diff = position - gameObject->getPosition();
+		float length = D3DXVec3LengthSq(&diff);
+		float radii = radiusSquared + gameObject->getRadiusSquare();
+		if (length <= radii)
+			return true;
+	}
 	return false;
 }
