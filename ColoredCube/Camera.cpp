@@ -97,6 +97,11 @@ void Camera::restart() {
 }
 
 void Camera::cameraShake(float dt) {
+	if (!cameraShaking) {
+		oldPos = position;
+		oldLookAt = lookAt;
+	}
+
 	cameraShaking = true;
 	shakeTimer += dt;
 	if (shakeTimer <= 0.05f) {
@@ -112,8 +117,8 @@ void Camera::cameraShake(float dt) {
 		lookAt.z   += 0.007;
 	}
 	else {
-		position.z = 0.0f;
-		lookAt.z   = 0.0f;
+		position.z = oldPos.z;
+		lookAt.z   = oldLookAt.z;
 		cameraShaking = false;
 	}
 }

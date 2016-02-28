@@ -58,6 +58,8 @@ private:
 	Vector3 minLookAt;
 
 	bool cameraShaking;
+	Vector3 oldPos;
+	Vector3 oldLookAt;
 	float shakeTimer;
 	bool canCameraMoveLeft;
 	bool canCameraMoveRight;
