@@ -166,7 +166,7 @@ void ColoredCubeApp::initApp()
 	mEnemy.init(md3dDevice, .5f, RED);
 	mPlayer.init(md3dDevice, .5f, BLUE);
 	mBullet.init(md3dDevice, .25f, D3DXCOLOR(0.0f, 1.0f, 0.0f, 0.0f));
-	particleBox.init(md3dDevice, .03f, GREEN);
+	particleBox.init(md3dDevice, .015f, GREEN);
 	//mBox.init(md3dDevice, boxScale);
 	mLine.init(md3dDevice, 1.0f);
 	//mTriangle.init(md3dDevice, 1.0f);
@@ -380,7 +380,7 @@ void ColoredCubeApp::updateScene(float dt)
 
 		if(explosionRunning) explosionTimer += dt;
 
-		if (explosionTimer > .75){
+		if (explosionTimer > .65){
 			explosionTimer = 0;
 			explosionRunning = false;
 			for (int i = 0; i < MAX_NUM_EXP_PARTICLES; i++)
