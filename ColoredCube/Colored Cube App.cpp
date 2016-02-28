@@ -572,16 +572,28 @@ void ColoredCubeApp::drawScene()
 		playerBullets[i].draw();
 	}
 
+	if(gsm->getGameState() == GameStateManager::END_GAME){
+		std::wostringstream gameOverString;   
+		gameOverString.precision(6);
+		gameOverString << "GAME OVER!\n";
+		finalScore = gameOverString.str();
+		RECT R2 = {GAME_WIDTH/2 - 150, GAME_HEIGHT/2 - 25, 0, 0};
+		endFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, GREEN);
+	}
+	
 	std::wostringstream scoreString;   
 	scoreString.precision(6);
 	scoreString << score;
 	finalScore = scoreString.str();
+	RECT R2 = {GAME_WIDTH/2 + 50, GAME_HEIGHT + 65, 0, 0};
+	scoreFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, GREEN);
+	
 
 	// We specify DT_NOCLIP, so we do not care about width/height of the rect.
 	RECT R = {5, 5, 0, 0};
-	RECT R2 = {GAME_WIDTH/2 + 50, GAME_HEIGHT + 65, 0, 0};
 	mFont->DrawText(0, mFrameStats.c_str(), -1, &R, DT_NOCLIP, BLACK);
-	scoreFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, GREEN);
+
+	
 
 
 	mSwapChain->Present(0, 0);

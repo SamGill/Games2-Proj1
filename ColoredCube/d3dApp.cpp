@@ -47,6 +47,7 @@ D3DApp::D3DApp(HINSTANCE hInstance)
 	mDepthStencilView   = 0;
 	mFont               = 0;
 	scoreFont			= 0;
+	endFont			= 0;
 
 	mMainWndCaption = L"D3D10 Application";
 	md3dDriverType  = D3D10_DRIVER_TYPE_HARDWARE;
@@ -137,6 +138,19 @@ void D3DApp::initApp()
     wcscpy(fontDesc.FaceName, L"Consolas");
 
 	D3DX10CreateFontIndirect(md3dDevice, &fontDesc, &scoreFont);
+
+	fontDesc.Height          = 100;
+    fontDesc.Width           = 0;
+    fontDesc.Weight          = 0;
+    fontDesc.MipLevels       = 1;
+    fontDesc.Italic          = false;
+    fontDesc.CharSet         = DEFAULT_CHARSET;
+    fontDesc.OutputPrecision = OUT_DEFAULT_PRECIS;
+    fontDesc.Quality         = DEFAULT_QUALITY;
+    fontDesc.PitchAndFamily  = DEFAULT_PITCH | FF_DONTCARE;
+    wcscpy(fontDesc.FaceName, L"Consolas");
+
+	D3DX10CreateFontIndirect(md3dDevice, &fontDesc, &endFont);
 }
  
 void D3DApp::onResize()

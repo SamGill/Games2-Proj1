@@ -60,6 +60,7 @@ protected:
 	ID3D10DepthStencilView* mDepthStencilView;
 	ID3DX10Font* mFont;
 	ID3DX10Font* scoreFont;
+	ID3DX10Font* endFont;
 
 	// Derived class should set these in derived constructor to customize starting values.
 	std::wstring mMainWndCaption;
