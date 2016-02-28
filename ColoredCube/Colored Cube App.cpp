@@ -394,6 +394,7 @@ void ColoredCubeApp::updateScene(float dt)
 				audio->playCue(BEEP1);
 				enemyObjects[i].setInActive();
 				//score++;
+				camera.cameraShake(dt);
 				gsm->setGameState(GameStateManager::END_GAME);
 			}
 		}
@@ -454,6 +455,11 @@ void ColoredCubeApp::updateScene(float dt)
 	{
 		//D3DApp::updateScene(dt);
 		//gameObject1.update(dt);
+
+		if (camera.isCameraShaking()) {
+			camera.cameraShake(dt);
+		}
+
 		D3DXMATRIX w;
 
 		D3DXMatrixTranslation(&w, 2, 2, 0);

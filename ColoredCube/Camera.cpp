@@ -18,6 +18,8 @@ Camera::Camera()
 	minLookAt = Vector3(0.0f, 0.0f, -2.0f);
 	canCameraMoveLeft = true;
 	canCameraMoveRight = true;
+	cameraShaking = false;
+	shakeTimer = 0.0f;
 }
 
 Camera::~Camera()
@@ -40,6 +42,8 @@ void Camera::update(float dt)
 	direction = Vector3(0.0f, 0.0f, 0.0f);
 
 	if (gsm->getGameState() == GameStateManager::IN_GAME) {
+		cameraShaking = false;
+		shakeTimer = 0.0f;
 
 		if((GetAsyncKeyState('A') & 0x8000) && !(GetAsyncKeyState('D') & 0x8000)) {
 			direction.z = -1.0f;
@@ -90,4 +94,26 @@ void Camera::restart() {
 	position  = Vector3(10.0f, 2.0f, 0.0f);
 	lookAt    = Vector3(0.0f, 0.0f, 0.0f);
 	direction = Vector3(0.0f, 0.0f, 0.0f);
+}
+
+void Camera::cameraShake(float dt) {
+	cameraShaking = true;
+	shakeTimer += dt;
+	if (shakeTimer <= 0.05f) {
+		position.z += 0.007;
+		lookAt.z   += 0.007;
+	}
+	else if (shakeTimer <= 0.1) {
+		position.z -= 0.007;
+		lookAt.z   -= 0.007;
+	}
+	else if (shakeTimer <= 0.15) {
+		position.z += 0.007;
+		lookAt.z   += 0.007;
+	}
+	else {
+		position.z = 0.0f;
+		lookAt.z   = 0.0f;
+		cameraShaking = false;
+	}
 }
