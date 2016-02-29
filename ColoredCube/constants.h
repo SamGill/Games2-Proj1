@@ -150,6 +150,6 @@ const unsigned int MAX_NUM_BULLETS = 20;
 const unsigned int MAX_NUM_EXP_PARTICLES = 50;
 const unsigned int MAX_NUM_STARS = 150;
 const int PLAYER_Z_RANGE = 2;
-
+const unsigned int TOTAL_SECONDS = 20;
 
 #endif

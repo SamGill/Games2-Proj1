@@ -138,7 +138,7 @@ ColoredCubeApp::ColoredCubeApp(HINSTANCE hInstance) : D3DApp(hInstance), mFX(0),
 
 	gsm = new GameStateManager();
 	camera.setGsm(gsm);
-	secondsRemaining = 120;
+	secondsRemaining = TOTAL_SECONDS;
 }
 
 ColoredCubeApp::~ColoredCubeApp()
@@ -562,6 +562,10 @@ void ColoredCubeApp::updateScene(float dt)
 			mProj = camera.getProjectionMatrix();
 		}
 
+		if (secondsRemaining <= 0)
+		{
+			gsm->setGameState(GameStateManager::END_GAME);
+		}
 
 	case GameStateManager::END_GAME:
 		{
@@ -750,10 +754,15 @@ void ColoredCubeApp::restartGame() {
 	gameObject1.setPosition(Vector3(6,.5,0));
 	gameObject1.setVelocity(Vector3(0,0,0));
 
-	int step = 2;
+	//int step = 2;
 	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
 	{
 		enemyObjects[i].setInActive();
+	}
+
+	for (int i = 0; i < MAX_NUM_BULLETS; i++)
+	{
+		playerBullets[i].setInActive();
 	}
 
 	//Camera Object
@@ -763,7 +772,7 @@ void ColoredCubeApp::restartGame() {
 	cameraPos = pos;
 
 
-	secondsRemaining = 120;
+	secondsRemaining = TOTAL_SECONDS;
 	score = 0;
 }
 
