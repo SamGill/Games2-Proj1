@@ -16,8 +16,8 @@ Global Settings
     Header File = C:\Programming 2D Games\Object Version\Chapter 7 Sound\SoundExample1\audio\SoundExample1.h;
     Exclude Category Names = 0;
     Exclude Variable Names = 0;
-    Last Modified Low = 3908478138;
-    Last Modified High = 30503732;
+    Last Modified Low = 2336873486;
+    Last Modified High = 30503735;
 
     Category
     {
@@ -229,6 +229,8 @@ Wave Bank
     Xbox Bank Last Modified High = 0;
     PC Bank Last Modified Low = 2787169847;
     PC Bank Last Modified High = 30503734;
+    Header Last Modified Low = 0;
+    Header Last Modified High = 0;
     Bank Last Revised Low = 2671768661;
     Bank Last Revised High = 30503734;
 
@@ -447,7 +449,7 @@ Sound Bank
     Windows File = Win\SoundsExample1.xsb;
     Xbox Bank Path Edited = 0;
     Windows Bank Path Edited = 0;
-    Bank Last Modified Low = 213654028;
+    Bank Last Modified Low = 2336933554;
     Bank Last Modified High = 30503735;
     Header Last Modified High = 0;
     Header Last Modified Low = 0;
@@ -784,7 +786,7 @@ Sound Bank
     Sound
     {
         Name = fail;
-        Volume = -1200;
+        Volume = -670;
         Pitch = 0;
         Priority = 0;
 
