@@ -43,6 +43,7 @@ public:
 	void drawScene();
 	void restartGame();
 	void runExplosion(Vector3 pos);
+	void placeStars();
 
 	//Input* getInput() {   return input;}
 	//Audio* getAudio() {   return audio;}
@@ -65,6 +66,7 @@ private:
 	Box mEnemy, mPlayer, mBullet;
 	Box mBox;
 	Box particleBox;
+	Box starBox;
 
 	GameStateManager* gsm;
 
@@ -77,6 +79,7 @@ private:
 	GameObject enemyObjects[MAX_NUM_ENEMIES];
 	GameObject playerBullets[MAX_NUM_BULLETS];
 	GameObject particles[MAX_NUM_EXP_PARTICLES];
+	GameObject stars[MAX_NUM_STARS];
 
 	ID3D10Effect* mFX;
 	ID3D10EffectTechnique* mTech;
@@ -169,10 +172,12 @@ void ColoredCubeApp::initApp()
 	mPlayer.init(md3dDevice, .5f, BLUE);
 	mBullet.init(md3dDevice, .25f, D3DXCOLOR(0.0f, 1.0f, 0.0f, 0.0f));
 	particleBox.init(md3dDevice, .01f, GREEN);
+	starBox.init(md3dDevice, 0.05f, WHITE);
 	//mBox.init(md3dDevice, boxScale);
 	mLine.init(md3dDevice, 1.0f);
 	//mTriangle.init(md3dDevice, 1.0f);
-	mQuad.init(md3dDevice, 10.0f);
+	//mQuad.init(md3dDevice, 10.0f);
+	mQuad.init(md3dDevice, 0.0f);
 
 	gameObject1.init(&mPlayer, sqrt(2.0f), Vector3(6,.5,0), Vector3(0,0,0), 5.0f,1.0f);
 	//gameObject1.init(&mBox, sqrt(2.0f), Vector3(6,.5,0), Vector3(0,0,0), 5000.0f,1.0f);
@@ -198,6 +203,12 @@ void ColoredCubeApp::initApp()
 		particles[i].init(&particleBox, 0.5f, Vector3(0,0,0), Vector3(0,0,0), 7000.0f, 1);
 		
 		particles[i].setInActive();
+	}
+
+	for (int i = 0; i < MAX_NUM_STARS; i++)
+	{
+		stars[i].init(&starBox, 0.5f, Vector3(0,0,0), Vector3(0,0,0), 7000.0f, 1);
+		stars[i].setActive();
 	}
 
 	buildFX();
@@ -236,6 +247,9 @@ void ColoredCubeApp::initApp()
 	cameraPos = pos;
 
 	audio->playCue(BKG);
+
+	//Places stars in scene
+	placeStars();
 
 }
 
@@ -363,6 +377,11 @@ void ColoredCubeApp::shootBullet(GameObject playerBullets[], float dt, GameObjec
 
 void ColoredCubeApp::updateScene(float dt)
 {
+	for (int i = 0; i < MAX_NUM_STARS; i++)
+	{
+		stars[i].update(dt);
+	}
+
 	switch (gsm->getGameState()) {
 	case GameStateManager::START_GAME: {
 		D3DApp::updateScene(dt);
@@ -427,6 +446,8 @@ void ColoredCubeApp::updateScene(float dt)
 				particles[i].update(dt);
 			}
 
+			
+
 			if(explosionRunning) explosionTimer += dt;
 			if (explosionTimer > .55) {
 				explosionTimer = 0;
@@ -444,8 +465,6 @@ void ColoredCubeApp::updateScene(float dt)
 
 					//shotRelease = false;
 				}
-
-
 			}
 
 
@@ -671,6 +690,14 @@ void ColoredCubeApp::drawScene()
 		particles[i].draw();
 	}
 
+	for (int i = 0; i < MAX_NUM_STARS; i++)
+	{
+		mWVP = stars[i].getWorldMatrix()  *mView*mProj;
+		mfxWVPVar->SetMatrix((float*)&mWVP);
+		stars[i].setMTech(mTech);
+		stars[i].draw();
+	}
+
 	if(gsm->getGameState() == GameStateManager::END_GAME){
 		std::wostringstream gameOverString;   
 		gameOverString.precision(6);
@@ -678,6 +705,16 @@ void ColoredCubeApp::drawScene()
 		finalScore = gameOverString.str();
 		RECT R2 = {GAME_WIDTH/2 - 150, GAME_HEIGHT/2 - 25, 0, 0};
 		endFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, GREEN);
+	}
+
+	//Start of game text
+	if(gsm->getGameState() == GameStateManager::START_GAME){
+		std::wostringstream startGameString;   
+		startGameString.precision(6);
+		startGameString << "PRESS SPACE TO START!\n";
+		finalScore = startGameString.str();
+		RECT R2 = {GAME_WIDTH/2 - 150, GAME_HEIGHT/2 - 25, 0, 0};
+		startFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, GREEN);
 	}
 
 	std::wostringstream scoreString;   
@@ -697,7 +734,7 @@ void ColoredCubeApp::drawScene()
 
 	// We specify DT_NOCLIP, so we do not care about width/height of the rect.
 	RECT R = {5, 5, 0, 0};
-	mFont->DrawText(0, mFrameStats.c_str(), -1, &R, DT_NOCLIP, BLACK);
+	//mFont->DrawText(0, mFrameStats.c_str(), -1, &R, DT_NOCLIP, BLACK);
 
 
 
@@ -787,6 +824,16 @@ void ColoredCubeApp::runExplosion(Vector3 pos){
 
 	}
 	explosionRunning = true;
+}
 
-
+void ColoredCubeApp::placeStars()
+{
+	for (int i = 0; i < MAX_NUM_STARS; i++)
+	{
+		float randx = (rand() % 10) + (-10);
+		float randz = (rand() % 21) + (-10);
+		float randy = (rand() % 21) + (-10);
+		Vector3 starPosition(randx, randy, randz);
+		stars[i].setPosition(starPosition);
+	}
 }

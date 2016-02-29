@@ -61,6 +61,7 @@ protected:
 	ID3DX10Font* mFont;
 	ID3DX10Font* scoreFont;
 	ID3DX10Font* endFont;
+	ID3DX10Font* startFont;
 
 	// Derived class should set these in derived constructor to customize starting values.
 	std::wstring mMainWndCaption;
