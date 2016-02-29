@@ -51,13 +51,15 @@ private:
 
 	void buildFX();
 	void buildVertexLayouts();
-		
+
 	Input* input;
 	Audio* audio;
 
 	TimeBuffer enemyBuffer;
 	TimeBuffer shotBuffer;
+	TimeBuffer gameTimer;
 
+	int secondsRemaining;
 
 	Axes mAxes;
 	Box mEnemy, mPlayer, mBullet;
@@ -99,7 +101,7 @@ private:
 
 	int score;
 	std::wstring finalScore;
-
+	std::wstring timeString;
 	bool shotRelease;
 	float explosionTimer;
 	bool explosionRunning;
@@ -133,7 +135,7 @@ ColoredCubeApp::ColoredCubeApp(HINSTANCE hInstance) : D3DApp(hInstance), mFX(0),
 
 	gsm = new GameStateManager();
 	camera.setGsm(gsm);
-
+	secondsRemaining = 120;
 }
 
 ColoredCubeApp::~ColoredCubeApp()
@@ -172,14 +174,14 @@ void ColoredCubeApp::initApp()
 	//mTriangle.init(md3dDevice, 1.0f);
 	mQuad.init(md3dDevice, 10.0f);
 
-	gameObject1.init(&mPlayer, sqrt(2.0f), Vector3(6,.5,0), Vector3(0,0,0), 5000.0f,1.0f);
+	gameObject1.init(&mPlayer, sqrt(2.0f), Vector3(6,.5,0), Vector3(0,0,0), 5.0f,1.0f);
 	//gameObject1.init(&mBox, sqrt(2.0f), Vector3(6,.5,0), Vector3(0,0,0), 5000.0f,1.0f);
 	gameObject1.setRadius(gameObject1.getRadius()*boxScale*collisionFixFactor);
 
 	int step = 2;
 	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
 	{
-		enemyObjects[i].init(&mEnemy, sqrt(2.0), Vector3(-5,.5,step*i - 3.8), Vector3(1,0,0), 3000.0f, 1);
+		enemyObjects[i].init(&mEnemy, sqrt(2.0), Vector3(-5,.5,step*i - 3.8), Vector3(1,0,0), 8.0f, 1);
 		//enemyObjects[i].init(&mBox, sqrt(2.0), Vector3(-5,.5,step*i - 3.8), Vector3(1,0,0), 3000.0f, 1);
 		enemyObjects[i].setRadius(enemyObjects[i].getRadius()*boxScale * collisionFixFactor);
 		enemyObjects[i].setInActive();
@@ -219,6 +221,8 @@ void ColoredCubeApp::initApp()
 
 	enemyBuffer.resetClock();
 	shotBuffer.resetClock();
+	gameTimer.resetClock();
+	
 
 	D3DXVECTOR3 pos(10.0f, 2.0f, 0.0f);
 	D3DXVECTOR3 target(0.0f, 0.0f, 0.0f);
@@ -241,7 +245,22 @@ void ColoredCubeApp::onResize()
 	D3DXMatrixPerspectiveFovLH(&mProj, 0.25f*PI, aspect, 1.0f, 1000.0f);
 }
 
+bool isPreviousPosition(int hValue, int numEnemiesGenerated, Vector3 prevPositions[]) {
+	for (int i = 0; i < numEnemiesGenerated; i++)
+	{
+		if (hValue == prevPositions[i].z)
+			return true;
+	}
+
+	return false;
+}
+
 void generateEnemy(GameObject enemyObjects[], float dt) {
+
+	int numEnemiesGenerated = 0;
+
+	Vector3 prevPositions[MAX_NUM_ENEMIES];
+
 	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
 	{
 		//This means he's already on the field, so keep going
@@ -249,23 +268,33 @@ void generateEnemy(GameObject enemyObjects[], float dt) {
 			continue;
 		else
 		{
+			float horizontalStartingPoint;
+			int leftOrRightSide;
+			while (true) {
+				horizontalStartingPoint = rand()%5;
 
-			float horizontalStartingPoint = rand()%5;
+				//flip it so that the boxes also appear sometimes on the left part of the screen
+				leftOrRightSide = 1;
+				if (rand()%2)
+					leftOrRightSide = -1;
 
-			//flip it so that the boxes also appear sometimes on the left part of the screen
-			int leftOrRightSide = 1;
-			if (rand()%2)
-				leftOrRightSide = -1;
+				horizontalStartingPoint *= leftOrRightSide;
 
-			horizontalStartingPoint *= leftOrRightSide;
+				if (isPreviousPosition(horizontalStartingPoint, numEnemiesGenerated, prevPositions) == false)
+					break;
+			}
+
+
 
 
 			//put the enemy object somewhere randomly and make them active
 			enemyObjects[i].setPosition(Vector3(-5,.5, horizontalStartingPoint));
 			enemyObjects[i].setActive();
 
-			//Now figure out their direction of travel
+			prevPositions[numEnemiesGenerated] = enemyObjects[i].getPosition();
 
+
+			//Now figure out their direction of travel
 			int randomZValue = ( rand() % (PLAYER_Z_RANGE + 1) ) * leftOrRightSide;
 
 			//These are the player starting points
@@ -273,9 +302,23 @@ void generateEnemy(GameObject enemyObjects[], float dt) {
 
 			D3DXVec3Normalize(&direction, &direction);
 
-			enemyObjects[i].setVelocity(direction * enemyObjects[i].getSpeed() * dt);
 
-			return;
+
+			Vector3 vel = direction * enemyObjects[i].getSpeed();
+
+			/*if (D3DXVec3Length(&vel) > 15)
+			{
+				D3DXVec3Normalize(&vel, &vel);
+				vel *= 15;
+
+			}*/
+
+			enemyObjects[i].setVelocity(vel);
+
+
+			//Most of the time, only one block will be generated
+			if (rand()%4)
+				return;
 		}
 	}
 }
@@ -289,16 +332,16 @@ void ColoredCubeApp::shootBullet(GameObject playerBullets[], float dt, GameObjec
 		shotBuffer.resetClock();
 	/*for (int i = 0; i < MAX_NUM_BULLETS; i++)
 	{
-		if (playerBullets[i].getActiveState())
-			continue;
-		else
-		{
-			D3DXVECTOR3 position = player.getPosition();
-			position.y = 0.5;
-			playerBullets[i].setActive();
-			playerBullets[i].setPosition(position);
-			return;
-		}
+	if (playerBullets[i].getActiveState())
+	continue;
+	else
+	{
+	D3DXVECTOR3 position = player.getPosition();
+	position.y = 0.5;
+	playerBullets[i].setActive();
+	playerBullets[i].setPosition(position);
+	return;
+	}
 	}*/
 
 	D3DXVECTOR3 position = player.getPosition();
@@ -351,176 +394,183 @@ void ColoredCubeApp::updateScene(float dt)
 
 		//Camera Object
 		camera.update(dt);
-
 		break;
-
-		
-
-	}
+									   }
 
 	case GameStateManager::IN_GAME:
-	{
-		//Generate a block every three seconds
-		if (enemyBuffer.elapsedTime() > 2) {
-			enemyBuffer.resetClock();
-
-			generateEnemy(enemyObjects, dt);
-		}
-
-		for (int i = 0; i < MAX_NUM_BULLETS; i++)
 		{
-			playerBullets[i].update(dt);
-		}
+			//Generate a block every three seconds
+			if (enemyBuffer.elapsedTime() > 2) {
+				enemyBuffer.resetClock();
 
-		
-		for (int i = 0; i < MAX_NUM_EXP_PARTICLES; i++)
-		{
-			particles[i].update(dt);
-		}
+				generateEnemy(enemyObjects, dt);
+			}
 
-		if(explosionRunning) explosionTimer += dt;
+			if (gameTimer.elapsedTime() >= 1) {
+				gameTimer.resetClock();
+				secondsRemaining--;
+			}
 
-		if (explosionTimer > .65){
-			explosionTimer = 0;
-			explosionRunning = false;
+
+			for (int i = 0; i < MAX_NUM_BULLETS; i++)
+			{
+				playerBullets[i].update(dt);
+			}
+
+
 			for (int i = 0; i < MAX_NUM_EXP_PARTICLES; i++)
 			{
-				particles[i].setInActive();
+				particles[i].update(dt);
 			}
-		}
 
-		
-		if(GetAsyncKeyState(VK_RETURN) & 0x8000){
-			if(shotRelease){
-				shootBullet(playerBullets, dt, gameObject1);
-				//shotRelease = false;
-			}
-		}
+			if(explosionRunning) explosionTimer += dt;
 
-		//if(!(GetAsyncKeyState(VK_RETURN) & 0x8000)) shotRelease = true;
-
-		Vector3 oldEnemyPositions[MAX_NUM_ENEMIES];
-		for (int i = 0; i < MAX_NUM_ENEMIES; i++)
-		{
-			oldEnemyPositions[i] = enemyObjects[i].getPosition();
-		}
-
-		Vector3 direction(0, 0, 0);
-		Vector3 oldposition = gameObject1.getPosition();
-
-		D3DApp::updateScene(dt);
-		gameObject1.update(dt);
-		for (int i = 0; i < MAX_NUM_ENEMIES; i++) {
-			enemyObjects[i].update(dt);
-		}
-
-		if((GetAsyncKeyState('A') & 0x8000) && !(GetAsyncKeyState('D') & 0x8000))  direction.z = -1.0f;
-		if((GetAsyncKeyState('D') & 0x8000) && !(GetAsyncKeyState('A') & 0x8000))  direction.z = +1.0f;
-
-		D3DXVec3Normalize(&direction, &direction);
-
-		for (int i = 0; i < MAX_NUM_ENEMIES; i++)
-		{
-			//if they collide and are active
-			if(gameObject1.collided(&enemyObjects[i]) && enemyObjects[i].getActiveState())
-			{
-				audio->playCue(BEEP1);
-				enemyObjects[i].setInActive();
-				//score++;
-				camera.cameraShake(dt);
-				gsm->setGameState(GameStateManager::END_GAME);
-			}
-		}
-
-		for (int i = 0; i < MAX_NUM_BULLETS; i++)
-		{
-			for (int j = 0; j < MAX_NUM_ENEMIES; j++)
-			{
-				if(playerBullets[i].collided(&enemyObjects[j]) && enemyObjects[j].getActiveState())
+			if (explosionTimer > .65){
+				explosionTimer = 0;
+				explosionRunning = false;
+				for (int i = 0; i < MAX_NUM_EXP_PARTICLES; i++)
 				{
-					runExplosion(playerBullets[i].getPosition());
-					enemyObjects[j].setInActive();
-					playerBullets[i].setInActive();
-					score++;
+					particles[i].setInActive();
 				}
 			}
+
+
+			if(GetAsyncKeyState(VK_RETURN) & 0x8000){
+				if(shotRelease){
+					shootBullet(playerBullets, dt, gameObject1);
+					//shotRelease = false;
+				}
+			}
+
+			//if(!(GetAsyncKeyState(VK_RETURN) & 0x8000)) shotRelease = true;
+
+			Vector3 oldEnemyPositions[MAX_NUM_ENEMIES];
+			for (int i = 0; i < MAX_NUM_ENEMIES; i++)
+			{
+				oldEnemyPositions[i] = enemyObjects[i].getPosition();
+			}
+
+			Vector3 direction(0, 0, 0);
+			Vector3 oldposition = gameObject1.getPosition();
+
+			D3DApp::updateScene(dt);
+			gameObject1.update(dt);
+			for (int i = 0; i < MAX_NUM_ENEMIES; i++) {
+				enemyObjects[i].update(dt);
+			}
+
+			if((GetAsyncKeyState('A') & 0x8000) && !(GetAsyncKeyState('D') & 0x8000))  direction.z = -1.0f;
+			if((GetAsyncKeyState('D') & 0x8000) && !(GetAsyncKeyState('A') & 0x8000))  direction.z = +1.0f;
+
+			D3DXVec3Normalize(&direction, &direction);
+
+			for (int i = 0; i < MAX_NUM_ENEMIES; i++)
+			{
+				//if they collide and are active
+				if(gameObject1.collided(&enemyObjects[i]) && enemyObjects[i].getActiveState())
+				{
+					audio->playCue(BEEP1);
+					enemyObjects[i].setInActive();
+					//score++;
+					camera.cameraShake(dt);
+					gsm->setGameState(GameStateManager::END_GAME);
+				}
+
+
+				if (enemyObjects[i].getPosition().x > 7) {
+					enemyObjects[i].setInActive();
+				}
+			}
+
+			for (int i = 0; i < MAX_NUM_BULLETS; i++)
+			{
+				for (int j = 0; j < MAX_NUM_ENEMIES; j++)
+				{
+					if(playerBullets[i].collided(&enemyObjects[j]) && enemyObjects[j].getActiveState())
+					{
+						runExplosion(playerBullets[i].getPosition());
+						enemyObjects[j].setInActive();
+						playerBullets[i].setInActive();
+						score++;
+					}
+				}
+			}
+
+
+			gameObject1.setVelocity( direction * gameObject1.getSpeed());
+
+			if (gameObject1.getPosition().z < -PLAYER_Z_RANGE){
+				gameObject1.setPosition(Vector3(oldposition.x, oldposition.y, -PLAYER_Z_RANGE));
+				camera.setCameraMoveLeft(false);
+				camera.setCameraMoveRight(true);
+			}
+			else if (gameObject1.getPosition().z > PLAYER_Z_RANGE){
+				gameObject1.setPosition(Vector3(oldposition.x, oldposition.y, PLAYER_Z_RANGE));
+				camera.setCameraMoveRight(false);
+				camera.setCameraMoveLeft(true);
+			}
+			else {
+				camera.setCameraMoveRight(true);
+				camera.setCameraMoveLeft(true);
+			}
+
+			//Destroys bullet if too far away
+			for (int i = 0; i < MAX_NUM_BULLETS; i++)
+			{
+				if(playerBullets[i].getPosition().x < -10 && playerBullets[i].getActiveState())
+					playerBullets[i].setInActive();
+			}
+
+			D3DXMATRIX w;
+
+			D3DXMatrixTranslation(&w, 2, 2, 0);
+			mfxWVPVar->SetMatrix(w);
+
+			//Camera Object
+			camera.update(dt);
+
+			//Get Camera viewMatrix
+			mView = camera.getViewMatrix();
+			mProj = camera.getProjectionMatrix();
 		}
-
-
-		gameObject1.setVelocity( direction * gameObject1.getSpeed() * dt);
-
-		if (gameObject1.getPosition().z < -PLAYER_Z_RANGE){
-			gameObject1.setPosition(Vector3(oldposition.x, oldposition.y, -PLAYER_Z_RANGE));
-			camera.setCameraMoveLeft(false);
-			camera.setCameraMoveRight(true);
-		}
-		else if (gameObject1.getPosition().z > PLAYER_Z_RANGE){
-			gameObject1.setPosition(Vector3(oldposition.x, oldposition.y, PLAYER_Z_RANGE));
-			camera.setCameraMoveRight(false);
-			camera.setCameraMoveLeft(true);
-		}
-		else {
-			camera.setCameraMoveRight(true);
-			camera.setCameraMoveLeft(true);
-		}
-
-		//Destroys bullet if too far away
-		for (int i = 0; i < MAX_NUM_BULLETS; i++)
-		{
-			if(playerBullets[i].getPosition().x < -10 && playerBullets[i].getActiveState())
-				playerBullets[i].setInActive();
-		}
-
-		D3DXMATRIX w;
-
-		D3DXMatrixTranslation(&w, 2, 2, 0);
-		mfxWVPVar->SetMatrix(w);
-
-		//Camera Object
-		camera.update(dt);
-
-		//Get Camera viewMatrix
-		mView = camera.getViewMatrix();
-		mProj = camera.getProjectionMatrix();
-	}
 
 
 	case GameStateManager::END_GAME:
-	{
-		//D3DApp::updateScene(dt);
-		//gameObject1.update(dt);
+		{
+			//D3DApp::updateScene(dt);
+			//gameObject1.update(dt);
 
-		if (camera.isCameraShaking()) {
-			camera.cameraShake(dt);
-		}
+			if (camera.isCameraShaking()) {
+				camera.cameraShake(dt);
+			}
 
-		D3DXMATRIX w;
+			D3DXMATRIX w;
 
-		D3DXMatrixTranslation(&w, 2, 2, 0);
-		mfxWVPVar->SetMatrix(w);
+			D3DXMatrixTranslation(&w, 2, 2, 0);
+			mfxWVPVar->SetMatrix(w);
 
-		//// Build the view matrix.
-		//D3DXVECTOR3 pos(10.0f, 2.0f, 0.0f);
-		//D3DXVECTOR3 target(0.0f, 0.0f, 0.0f);
-		//D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
-		//D3DXMatrixLookAtLH(&mView, &pos, &target, &up);
+			//// Build the view matrix.
+			//D3DXVECTOR3 pos(10.0f, 2.0f, 0.0f);
+			//D3DXVECTOR3 target(0.0f, 0.0f, 0.0f);
+			//D3DXVECTOR3 up(0.0f, 1.0f, 0.0f);
+			//D3DXMatrixLookAtLH(&mView, &pos, &target, &up);
 
-		if(GetAsyncKeyState(VK_SPACE) & 0x8000 && gsm->getGameState() != GameStateManager::IN_GAME) {
-			restartGame();
-			gsm->setGameState(GameStateManager::IN_GAME);
-		}
+			if(GetAsyncKeyState(VK_SPACE) & 0x8000 && gsm->getGameState() != GameStateManager::IN_GAME) {
+				restartGame();
+				gsm->setGameState(GameStateManager::IN_GAME);
+			}
 
-		//Camera Object
-		camera.update(dt);
+			//Camera Object
+			camera.update(dt);
 
-		break;
-	}
-
-
-		default: {
-			throw(GameError(gameErrorNS::FATAL_ERROR, "Game State Error"));
 			break;
 		}
+
+
+	default: {
+		throw(GameError(gameErrorNS::FATAL_ERROR, "Game State Error"));
+		break;
+			 }
 	}
 }
 
@@ -562,8 +612,8 @@ void ColoredCubeApp::drawScene()
 	md3dDevice->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	//Get Camera viewMatrix
-	 mView = camera.getViewMatrix();
-	 mProj = camera.getProjectionMatrix();
+	mView = camera.getViewMatrix();
+	mProj = camera.getProjectionMatrix();
 
 	// set constants
 	mWVP = mView*mProj;
@@ -621,20 +671,27 @@ void ColoredCubeApp::drawScene()
 		RECT R2 = {GAME_WIDTH/2 - 150, GAME_HEIGHT/2 - 25, 0, 0};
 		endFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, GREEN);
 	}
-	
+
 	std::wostringstream scoreString;   
 	scoreString.precision(6);
 	scoreString << score;
 	finalScore = scoreString.str();
 	RECT R2 = {GAME_WIDTH/2 + 50, GAME_HEIGHT + 65, 0, 0};
 	scoreFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, GREEN);
-	
+
+
+	std::wostringstream ts;
+	ts.precision(6);
+	ts << secondsRemaining;
+	timeString = ts.str();
+	RECT R3 = {GAME_WIDTH/2 + 50, 20, 0, 0};
+	scoreFont->DrawText(0, timeString.c_str(), -1, &R3, DT_NOCLIP, GREEN);
 
 	// We specify DT_NOCLIP, so we do not care about width/height of the rect.
 	RECT R = {5, 5, 0, 0};
 	mFont->DrawText(0, mFrameStats.c_str(), -1, &R, DT_NOCLIP, BLACK);
 
-	
+
 
 
 	mSwapChain->Present(0, 0);
@@ -656,6 +713,8 @@ void ColoredCubeApp::restartGame() {
 	// camera
 	cameraPos = pos;
 
+
+	secondsRemaining = 120;
 	score = 0;
 }
 
@@ -720,6 +779,6 @@ void ColoredCubeApp::runExplosion(Vector3 pos){
 
 	}
 	explosionRunning = true;
-	
+
 
 }
