@@ -382,6 +382,7 @@ void ColoredCubeApp::updateScene(float dt)
 
 		if(GetAsyncKeyState(VK_SPACE) & 0x8000 && gsm->getGameState() != GameStateManager::IN_GAME) {
 			gsm->setGameState(GameStateManager::IN_GAME);
+			audio->playCue(SELECT);
 		}
 
 		Vector3 oldEnemyPositions[MAX_NUM_ENEMIES];
@@ -566,6 +567,7 @@ void ColoredCubeApp::updateScene(float dt)
 			if(GetAsyncKeyState(VK_SPACE) & 0x8000 && gsm->getGameState() != GameStateManager::IN_GAME) {
 				restartGame();
 				gsm->setGameState(GameStateManager::IN_GAME);
+				audio->playCue(SELECT);
 			}
 
 			//Camera Object

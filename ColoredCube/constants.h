@@ -123,7 +123,7 @@ const char LASER[]   = "laser";
 const char BOOM[]   = "boom";
 const char FAIL[]   = "fail";
 const char BKG[]   = "bkg";
-
+const char SELECT[]   = "select";
 
 // States
 enum GameStates {intro, gamePlay, end, readyToPlay};
