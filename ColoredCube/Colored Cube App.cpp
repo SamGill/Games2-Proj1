@@ -304,6 +304,7 @@ void ColoredCubeApp::shootBullet(GameObject playerBullets[], float dt, GameObjec
 	D3DXVECTOR3 position = player.getPosition();
 	position.y = 0.5;
 
+	audio->playCue(LASER);
 	playerBullets[currentBullet].setActive();
 	playerBullets[currentBullet].setPosition(position);
 
@@ -392,7 +393,9 @@ void ColoredCubeApp::updateScene(float dt)
 		
 		if(GetAsyncKeyState(VK_RETURN) & 0x8000){
 			if(shotRelease){
+				
 				shootBullet(playerBullets, dt, gameObject1);
+				
 				//shotRelease = false;
 			}
 		}
@@ -438,6 +441,7 @@ void ColoredCubeApp::updateScene(float dt)
 			{
 				if(playerBullets[i].collided(&enemyObjects[j]) && enemyObjects[j].getActiveState())
 				{
+					audio->playCue(BOOM);
 					runExplosion(playerBullets[i].getPosition());
 					enemyObjects[j].setInActive();
 					playerBullets[i].setInActive();
