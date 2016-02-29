@@ -222,7 +222,7 @@ void ColoredCubeApp::initApp()
 	enemyBuffer.resetClock();
 	shotBuffer.resetClock();
 	gameTimer.resetClock();
-	
+
 
 	D3DXVECTOR3 pos(10.0f, 2.0f, 0.0f);
 	D3DXVECTOR3 target(0.0f, 0.0f, 0.0f);
@@ -308,8 +308,8 @@ void generateEnemy(GameObject enemyObjects[], float dt) {
 
 			/*if (D3DXVec3Length(&vel) > 15)
 			{
-				D3DXVec3Normalize(&vel, &vel);
-				vel *= 15;
+			D3DXVec3Normalize(&vel, &vel);
+			vel *= 15;
 
 			}*/
 
@@ -347,6 +347,7 @@ void ColoredCubeApp::shootBullet(GameObject playerBullets[], float dt, GameObjec
 	D3DXVECTOR3 position = player.getPosition();
 	position.y = 0.5;
 
+	audio->playCue(LASER);
 	playerBullets[currentBullet].setActive();
 	playerBullets[currentBullet].setPosition(position);
 
@@ -424,8 +425,7 @@ void ColoredCubeApp::updateScene(float dt)
 			}
 
 			if(explosionRunning) explosionTimer += dt;
-
-			if (explosionTimer > .65){
+			if (explosionTimer > .65) {
 				explosionTimer = 0;
 				explosionRunning = false;
 				for (int i = 0; i < MAX_NUM_EXP_PARTICLES; i++)
@@ -433,14 +433,17 @@ void ColoredCubeApp::updateScene(float dt)
 					particles[i].setInActive();
 				}
 			}
-
-
 			if(GetAsyncKeyState(VK_RETURN) & 0x8000){
-				if(shotRelease){
+				if(shotRelease) {
+
 					shootBullet(playerBullets, dt, gameObject1);
+
 					//shotRelease = false;
 				}
+
+
 			}
+
 
 			//if(!(GetAsyncKeyState(VK_RETURN) & 0x8000)) shotRelease = true;
 
@@ -488,10 +491,11 @@ void ColoredCubeApp::updateScene(float dt)
 				{
 					if(playerBullets[i].collided(&enemyObjects[j]) && enemyObjects[j].getActiveState())
 					{
+						audio->playCue(BOOM);
 						runExplosion(playerBullets[i].getPosition());
 						enemyObjects[j].setInActive();
 						playerBullets[i].setInActive();
-						score++;
+						score++;	
 					}
 				}
 			}
