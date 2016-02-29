@@ -401,6 +401,7 @@ void ColoredCubeApp::updateScene(float dt)
 
 		if(GetAsyncKeyState(VK_SPACE) & 0x8000 && gsm->getGameState() != GameStateManager::IN_GAME) {
 			gsm->setGameState(GameStateManager::IN_GAME);
+			audio->playCue(SELECT);
 		}
 
 		Vector3 oldEnemyPositions[MAX_NUM_ENEMIES];
@@ -585,6 +586,7 @@ void ColoredCubeApp::updateScene(float dt)
 			if(GetAsyncKeyState(VK_SPACE) & 0x8000 && gsm->getGameState() != GameStateManager::IN_GAME) {
 				restartGame();
 				gsm->setGameState(GameStateManager::IN_GAME);
+				audio->playCue(SELECT);
 			}
 
 			//Camera Object
@@ -706,25 +708,27 @@ void ColoredCubeApp::drawScene()
 		RECT R2 = {GAME_WIDTH/2 - 150, GAME_HEIGHT/2 - 25, 0, 0};
 		endFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, GREEN);
 	}
-
-	//Start of game text
 	if(gsm->getGameState() == GameStateManager::START_GAME){
-		std::wostringstream startGameString;   
-		startGameString.precision(6);
-		startGameString << "PRESS SPACE TO START!\n";
-		finalScore = startGameString.str();
-		RECT R2 = {GAME_WIDTH/2 - 150, GAME_HEIGHT/2 - 25, 0, 0};
-		startFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, GREEN);
+		std::wostringstream gameOverString;   
+		gameOverString.precision(6);
+		gameOverString << "Controls:\n";
+		gameOverString << "Move: A and D.\n";
+		gameOverString << "Shoot: Enter \n";
+		gameOverString << "Hit the spacebar to begin.";
+		finalScore = gameOverString.str();
+		RECT R2 = {100, GAME_HEIGHT/2 - 100, 0, 0};
+		scoreFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, GREEN);
+	}
+	else{
+		std::wostringstream scoreString;   
+		scoreString.precision(6);
+		scoreString << score;
+		finalScore = scoreString.str();
+		RECT R2 = {GAME_WIDTH/2 + 50, GAME_HEIGHT + 65, 0, 0};
+		scoreFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, GREEN);
 	}
 
-	std::wostringstream scoreString;   
-	scoreString.precision(6);
-	scoreString << score;
-	finalScore = scoreString.str();
-	RECT R2 = {GAME_WIDTH/2 + 50, GAME_HEIGHT + 65, 0, 0};
-	scoreFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, GREEN);
-
-
+	
 	std::wostringstream ts;
 	ts.precision(6);
 	ts << secondsRemaining;
