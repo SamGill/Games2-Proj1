@@ -16,8 +16,8 @@ Global Settings
     Header File = C:\Programming 2D Games\Object Version\Chapter 7 Sound\SoundExample1\audio\SoundExample1.h;
     Exclude Category Names = 0;
     Exclude Variable Names = 0;
-    Last Modified Low = 3180022128;
-    Last Modified High = 30138571;
+    Last Modified Low = 3908478138;
+    Last Modified High = 30503732;
 
     Category
     {
@@ -227,10 +227,10 @@ Wave Bank
     Compression Preset Name = <none>;
     Xbox Bank Last Modified Low = 0;
     Xbox Bank Last Modified High = 0;
-    PC Bank Last Modified Low = 1211011937;
-    PC Bank Last Modified High = 30503567;
-    Bank Last Revised Low = 773979986;
-    Bank Last Revised High = 30503567;
+    PC Bank Last Modified Low = 2787169847;
+    PC Bank Last Modified High = 30503734;
+    Bank Last Revised Low = 2671768661;
+    Bank Last Revised High = 30503734;
 
     Wave
     {
@@ -392,6 +392,52 @@ Wave Bank
             Last Modified High = 30503567;
         }
     }
+
+    Wave
+    {
+        Name = fail;
+        File = fail.wav;
+        Build Settings Last Modified Low = 3557632636;
+        Build Settings Last Modified High = 30503732;
+
+        Cache
+        {
+            Format Tag = 0;
+            Channels = 2;
+            Sampling Rate = 44100;
+            Bits Per Sample = 1;
+            Play Region Offset = 44;
+            Play Region Length = 548352;
+            Loop Region Offset = 0;
+            Loop Region Length = 0;
+            File Type = 1;
+            Last Modified Low = 3402924446;
+            Last Modified High = 30503732;
+        }
+    }
+
+    Wave
+    {
+        Name = bkg;
+        File = bkg.wav;
+        Build Settings Last Modified Low = 2417523161;
+        Build Settings Last Modified High = 30503734;
+
+        Cache
+        {
+            Format Tag = 0;
+            Channels = 2;
+            Sampling Rate = 44100;
+            Bits Per Sample = 1;
+            Play Region Offset = 44;
+            Play Region Length = 35809200;
+            Loop Region Offset = 0;
+            Loop Region Length = 0;
+            File Type = 1;
+            Last Modified Low = 951155674;
+            Last Modified High = 30503734;
+        }
+    }
 }
 
 Sound Bank
@@ -401,8 +447,8 @@ Sound Bank
     Windows File = Win\SoundsExample1.xsb;
     Xbox Bank Path Edited = 0;
     Windows Bank Path Edited = 0;
-    Bank Last Modified Low = 1211168169;
-    Bank Last Modified High = 30503567;
+    Bank Last Modified Low = 213654028;
+    Bank Last Modified High = 30503735;
     Header Last Modified High = 0;
     Header Last Modified Low = 0;
 
@@ -735,6 +781,100 @@ Sound Bank
         }
     }
 
+    Sound
+    {
+        Name = fail;
+        Volume = -1200;
+        Pitch = 0;
+        Priority = 0;
+
+        Category Entry
+        {
+            Name = Default;
+        }
+
+        Track
+        {
+            Volume = 0;
+            Use Filter = 0;
+
+            Play Wave Event
+            {
+                Break Loop = 0;
+                Use Speaker Position = 0;
+                Use Center Speaker = 1;
+                New Speaker Position On Loop = 1;
+                Speaker Position Angle = 0.000000;
+                Speaker Position Arc = 0.000000;
+
+                Event Header
+                {
+                    Timestamp = 0;
+                    Relative = 0;
+                    Random Recurrence = 0;
+                    Random Offset = 0;
+                }
+
+                Wave Entry
+                {
+                    Bank Name = WavesExample1;
+                    Bank Index = 0;
+                    Entry Name = fail;
+                    Entry Index = 7;
+                    Weight = 255;
+                    Weight Min = 0;
+                }
+            }
+        }
+    }
+
+    Sound
+    {
+        Name = bkg;
+        Volume = -240;
+        Pitch = 0;
+        Priority = 0;
+
+        Category Entry
+        {
+            Name = Default;
+        }
+
+        Track
+        {
+            Volume = 0;
+            Use Filter = 0;
+
+            Play Wave Event
+            {
+                Break Loop = 0;
+                Use Speaker Position = 0;
+                Use Center Speaker = 1;
+                New Speaker Position On Loop = 1;
+                Speaker Position Angle = 0.000000;
+                Speaker Position Arc = 0.000000;
+
+                Event Header
+                {
+                    Timestamp = 0;
+                    Relative = 0;
+                    Random Recurrence = 0;
+                    Random Offset = 0;
+                }
+
+                Wave Entry
+                {
+                    Bank Name = WavesExample1;
+                    Bank Index = 0;
+                    Entry Name = bkg;
+                    Entry Index = 8;
+                    Weight = 255;
+                    Weight Min = 0;
+                }
+            }
+        }
+    }
+
     Cue
     {
         Name = beep1;
@@ -883,6 +1023,59 @@ Sound Bank
         {
             Name = boom;
             Index = 6;
+            Weight Min = 0;
+            Weight Max = 255;
+        }
+    }
+
+    Cue
+    {
+        Name = fail;
+
+        Variation
+        {
+            Variation Type = 3;
+            Variation Table Type = 1;
+            New Variation on Loop = 0;
+        }
+
+        Sound Entry
+        {
+            Name = fail;
+            Index = 7;
+            Weight Min = 0;
+            Weight Max = 255;
+        }
+
+        Instance Limit
+        {
+            Max Instances = 1;
+            Behavior = 0;
+
+            Crossfade
+            {
+                Fade In = 0;
+                Fade Out = 0;
+                Crossfade Type = 0;
+            }
+        }
+    }
+
+    Cue
+    {
+        Name = bkg;
+
+        Variation
+        {
+            Variation Type = 3;
+            Variation Table Type = 1;
+            New Variation on Loop = 0;
+        }
+
+        Sound Entry
+        {
+            Name = bkg;
+            Index = 8;
             Weight Min = 0;
             Weight Max = 255;
         }

@@ -168,7 +168,7 @@ void ColoredCubeApp::initApp()
 	mEnemy.init(md3dDevice, .5f, RED);
 	mPlayer.init(md3dDevice, .5f, BLUE);
 	mBullet.init(md3dDevice, .25f, D3DXCOLOR(0.0f, 1.0f, 0.0f, 0.0f));
-	particleBox.init(md3dDevice, .015f, GREEN);
+	particleBox.init(md3dDevice, .01f, GREEN);
 	//mBox.init(md3dDevice, boxScale);
 	mLine.init(md3dDevice, 1.0f);
 	//mTriangle.init(md3dDevice, 1.0f);
@@ -196,6 +196,7 @@ void ColoredCubeApp::initApp()
 	for (int i = 0; i < MAX_NUM_EXP_PARTICLES; i++)
 	{
 		particles[i].init(&particleBox, 0.5f, Vector3(0,0,0), Vector3(0,0,0), 7000.0f, 1);
+		
 		particles[i].setInActive();
 	}
 
@@ -233,6 +234,8 @@ void ColoredCubeApp::initApp()
 	camera.setPerspective();
 	// camera
 	cameraPos = pos;
+
+	audio->playCue(BKG);
 
 }
 
@@ -425,7 +428,7 @@ void ColoredCubeApp::updateScene(float dt)
 			}
 
 			if(explosionRunning) explosionTimer += dt;
-			if (explosionTimer > .65) {
+			if (explosionTimer > .55) {
 				explosionTimer = 0;
 				explosionRunning = false;
 				for (int i = 0; i < MAX_NUM_EXP_PARTICLES; i++)
@@ -433,6 +436,7 @@ void ColoredCubeApp::updateScene(float dt)
 					particles[i].setInActive();
 				}
 			}
+
 			if(GetAsyncKeyState(VK_RETURN) & 0x8000){
 				if(shotRelease) {
 
@@ -472,7 +476,7 @@ void ColoredCubeApp::updateScene(float dt)
 				//if they collide and are active
 				if(gameObject1.collided(&enemyObjects[i]) && enemyObjects[i].getActiveState())
 				{
-					audio->playCue(BEEP1);
+					audio->playCue(FAIL);
 					enemyObjects[i].setInActive();
 					//score++;
 					camera.cameraShake(dt);
