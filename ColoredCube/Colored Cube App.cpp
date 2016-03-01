@@ -66,6 +66,7 @@ private:
 	Box mEnemy, mPlayer, mBullet;
 	Box mBox;
 	Box particleBox;
+	Box particleBox2;
 	Box starBox;
 
 	GameStateManager* gsm;
@@ -172,6 +173,7 @@ void ColoredCubeApp::initApp()
 	mPlayer.init(md3dDevice, .5f, BLUE);
 	mBullet.init(md3dDevice, .25f, D3DXCOLOR(0.0f, 1.0f, 0.0f, 0.0f));
 	particleBox.init(md3dDevice, .01f, GREEN);
+	particleBox2.init(md3dDevice, .015f, RED);
 	starBox.init(md3dDevice, 0.05f, WHITE);
 	//mBox.init(md3dDevice, boxScale);
 	mLine.init(md3dDevice, 1.0f);
@@ -200,8 +202,13 @@ void ColoredCubeApp::initApp()
 
 	for (int i = 0; i < MAX_NUM_EXP_PARTICLES; i++)
 	{
+<<<<<<< HEAD
 		particles[i].init(&particleBox, 0.5f, Vector3(0,0,0), Vector3(0,0,0), 7000.0f, 1);
 
+=======
+		if(i%2 == 0)particles[i].init(&particleBox, 0.5f, Vector3(0,0,0), Vector3(0,0,0), 7000.0f, 1);
+		else particles[i].init(&particleBox2, 0.5f, Vector3(0,0,0), Vector3(0,0,0), 7000.0f, 1);
+>>>>>>> origin/master
 		particles[i].setInActive();
 	}
 
