@@ -196,7 +196,7 @@ void ColoredCubeApp::initApp()
 
 	for (int i = 0; i < MAX_NUM_BULLETS; i++)
 	{
-		playerBullets[i].init(&mBullet, 0.5f, Vector3(0,0,0), Vector3(-5,0,0), 7000.0f, 1);
+		playerBullets[i].init(&mBullet, 0.5f, Vector3(0,0,0), Vector3(-12,0,0), 0.0f, 1);
 		playerBullets[i].setInActive();
 	}
 
@@ -360,7 +360,7 @@ void generateEnemy(GameObject enemyObjects[], float dt) {
 void ColoredCubeApp::shootBullet(GameObject playerBullets[], float dt, GameObject player)
 {
 
-	if (shotBuffer.elapsedTime() < 1)
+	if ( shotBuffer.fireElapsed() < 0.75f)
 		return;
 	else
 		shotBuffer.resetClock();

@@ -16,6 +16,10 @@ class TimeBuffer {
 			return ((unsigned long) clock() - begTime) / CLOCKS_PER_SEC;
 		}
 		
+		float fireElapsed() {
+			return  ( ((float) clock() - (begTime)) / (float)CLOCKS_PER_SEC);
+		}
+
 		/*bool canFire(unsigned long seconds) {
 
 			return seconds <= elapsedTime();
