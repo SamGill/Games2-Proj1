@@ -732,8 +732,8 @@ void ColoredCubeApp::drawScene()
 		std::wostringstream gameOverString;   
 		gameOverString.precision(6);
 		gameOverString << "YOU WIN!\n";
-		gameOverString << "\nScore: " << score;
-		gameOverString << "Spacebar to\nplay again.";
+		gameOverString << "Score: " << score;
+		gameOverString << "\nSpacebar to\nplay again.";
 		finalScore = gameOverString.str();
 		RECT R2 = {GAME_WIDTH/2 - 100, GAME_HEIGHT/2 - 100, 0, 0};
 		endFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, GREEN);
@@ -742,8 +742,8 @@ void ColoredCubeApp::drawScene()
 		std::wostringstream gameOverString;   
 		gameOverString.precision(6);
 		gameOverString << "YOU DIED!\n";
-		gameOverString << "\nScore: " << score;
-		gameOverString << "Spacebar to\nplay again.";
+		gameOverString << "Score: " << score;
+		gameOverString << "\nSpacebar to\nplay again.";
 		finalScore = gameOverString.str();
 		RECT R2 = {GAME_WIDTH/2 - 100, GAME_HEIGHT/2 - 100, 0, 0};
 		endFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, GREEN);
