@@ -522,6 +522,7 @@ void ColoredCubeApp::updateScene(float dt)
 					enemyObjects[i].setInActive();
 					//score++;
 					camera.cameraShake(dt);
+					score = 0;
 					gsm->setGameState(GameStateManager::END_GAME);
 				}
 
@@ -727,12 +728,22 @@ void ColoredCubeApp::drawScene()
 		stars[i].draw();
 	}
 
-	if(gsm->getGameState() == GameStateManager::END_GAME){
+	if(gsm->getGameState() == GameStateManager::END_GAME && score > 0){
 		std::wostringstream gameOverString;   
 		gameOverString.precision(6);
-		gameOverString << "GAME OVER!\n";
+		gameOverString << "YOU WIN!\n";
+		gameOverString << "\nScore: " << score;
 		gameOverString << "Spacebar to\nplay again.";
-		gameOverString << "\n     " << score;
+		finalScore = gameOverString.str();
+		RECT R2 = {GAME_WIDTH/2 - 100, GAME_HEIGHT/2 - 100, 0, 0};
+		endFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, GREEN);
+	}
+	else if(gsm->getGameState() == GameStateManager::END_GAME){
+		std::wostringstream gameOverString;   
+		gameOverString.precision(6);
+		gameOverString << "YOU DIED!\n";
+		gameOverString << "\nScore: " << score;
+		gameOverString << "Spacebar to\nplay again.";
 		finalScore = gameOverString.str();
 		RECT R2 = {GAME_WIDTH/2 - 100, GAME_HEIGHT/2 - 100, 0, 0};
 		endFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, GREEN);
@@ -745,7 +756,7 @@ void ColoredCubeApp::drawScene()
 		gameOverString << "Shoot: Enter \n";
 		gameOverString << "Hit the spacebar to begin.";
 		finalScore = gameOverString.str();
-		RECT R2 = {100, GAME_HEIGHT/2 - 100, 0, 0};
+		RECT R2 = {50, GAME_HEIGHT/2 - 100, 0, 0};
 		scoreFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, GREEN);
 	}
 	else{
