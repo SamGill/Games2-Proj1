@@ -351,7 +351,7 @@ void generateEnemy(GameObject enemyObjects[], float dt) {
 
 			numEnemiesGenerated++;
 			//Most of the time, only one block will be generated. This is the second block
-			if (rand()%3 || numEnemiesGenerated == 3)
+			if ( (rand()%7) > 3  || numEnemiesGenerated == 3)
 				return;
 		}
 	}
@@ -360,7 +360,7 @@ void generateEnemy(GameObject enemyObjects[], float dt) {
 void ColoredCubeApp::shootBullet(GameObject playerBullets[], float dt, GameObject player)
 {
 
-	if ( shotBuffer.fireElapsed() < 0.75f)
+	if ( shotBuffer.fireElapsed() < 0.6f)
 		return;
 	else
 		shotBuffer.resetClock();
