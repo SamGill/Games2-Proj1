@@ -136,13 +136,13 @@ void Camera::cameraRecoil(float dt) {
 	recoilTimer += dt;
 
 	if (recoilTimer <= 0.1) {
-		position.x -= 0.0015;
-		lookAt.x -= 0.0015;
+		position.x -= 0.007;
+		lookAt.x -= 0.007;
 	}
 
 	else if (recoilTimer <= 0.2) {
-		position.x += 0.0015;
-		lookAt.x += 0.0015;
+		position.x += 0.007;
+		lookAt.x += 0.007;
 	}
 
 	else {
