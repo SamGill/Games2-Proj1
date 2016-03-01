@@ -518,6 +518,7 @@ void ColoredCubeApp::updateScene(float dt)
 					if(playerBullets[i].collided(&enemyObjects[j]) && enemyObjects[j].getActiveState())
 					{
 						audio->playCue(BOOM);
+						explosionTimer = 0;
 						runExplosion(playerBullets[i].getPosition());
 						enemyObjects[j].setInActive();
 						playerBullets[i].setInActive();
@@ -661,8 +662,8 @@ void ColoredCubeApp::drawScene()
 		mTech->GetPassByIndex( p )->Apply(0);
 
 		//mBox.draw();
-		mAxes.draw();
-		mLine.draw();
+		//mAxes.draw();
+		//mLine.draw();
 		//mTriangle.draw();
 		mQuad.draw();
 		//particleBox.draw();
