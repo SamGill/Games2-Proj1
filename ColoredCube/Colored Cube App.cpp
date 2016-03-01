@@ -385,6 +385,8 @@ void ColoredCubeApp::shootBullet(GameObject playerBullets[], float dt, GameObjec
 	playerBullets[currentBullet].setActive();
 	playerBullets[currentBullet].setPosition(position);
 
+	camera.cameraRecoil(dt);
+
 	currentBullet++;
 	if(currentBullet >= MAX_NUM_BULLETS) currentBullet = 0;
 
@@ -464,6 +466,9 @@ void ColoredCubeApp::updateScene(float dt)
 				particles[i].update(dt);
 			}
 
+			if (camera.isCameraRecoiling()) {
+				camera.cameraRecoil(dt);
+			}
 			
 
 			if(explosionRunning) explosionTimer += dt;

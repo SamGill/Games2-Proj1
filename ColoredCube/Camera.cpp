@@ -20,6 +20,9 @@ Camera::Camera()
 	canCameraMoveRight = true;
 	cameraShaking = false;
 	shakeTimer = 0.0f;
+
+	cameraRecoiling = false;
+	recoilTimer = 0.0f;
 }
 
 Camera::~Camera()
@@ -120,5 +123,32 @@ void Camera::cameraShake(float dt) {
 		position.z = oldPos.z;
 		lookAt.z   = oldLookAt.z;
 		cameraShaking = false;
+	}
+}
+
+void Camera::cameraRecoil(float dt) {
+	if (!cameraRecoiling) {
+		oldPos = position;
+		oldLookAt = lookAt;
+	}
+
+	cameraRecoiling = true;
+	recoilTimer += dt;
+
+	if (recoilTimer <= 0.1) {
+		position.x += 0.007;
+		lookAt.x += 0.007;
+	}
+
+	else if (recoilTimer <= 0.2) {
+		position.x -= 0.007;
+		lookAt.x -= 0.007;
+	}
+
+	else {
+		position.x = oldPos.x;
+		lookAt.x = oldLookAt.x;
+		cameraRecoiling = false;
+		recoilTimer = 0.0f;
 	}
 }

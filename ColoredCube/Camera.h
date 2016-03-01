@@ -38,6 +38,9 @@ public:
 	void cameraShake(float dt);
 	void stopCameraShake() {cameraShaking = false;}
 	bool isCameraShaking() {return cameraShaking;}
+
+	void cameraRecoil(float dt);
+	bool isCameraRecoiling() {return cameraRecoiling;}
 private:
 	Matrix mView;
 	Matrix mProj;
@@ -58,9 +61,11 @@ private:
 	Vector3 minLookAt;
 
 	bool cameraShaking;
+	bool cameraRecoiling;
 	Vector3 oldPos;
 	Vector3 oldLookAt;
 	float shakeTimer;
+	float recoilTimer;
 	bool canCameraMoveLeft;
 	bool canCameraMoveRight;
 	GameStateManager* gsm;
