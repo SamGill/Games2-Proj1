@@ -140,7 +140,7 @@ void D3DApp::initApp()
 
 	D3DX10CreateFontIndirect(md3dDevice, &fontDesc, &scoreFont);
 
-	fontDesc.Height          = 100;
+	fontDesc.Height          = 75;
     fontDesc.Width           = 0;
     fontDesc.Weight          = 0;
     fontDesc.MipLevels       = 1;
