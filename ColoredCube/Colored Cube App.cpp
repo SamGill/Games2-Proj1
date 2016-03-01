@@ -202,13 +202,9 @@ void ColoredCubeApp::initApp()
 
 	for (int i = 0; i < MAX_NUM_EXP_PARTICLES; i++)
 	{
-<<<<<<< HEAD
-		particles[i].init(&particleBox, 0.5f, Vector3(0,0,0), Vector3(0,0,0), 7000.0f, 1);
 
-=======
 		if(i%2 == 0)particles[i].init(&particleBox, 0.5f, Vector3(0,0,0), Vector3(0,0,0), 7000.0f, 1);
 		else particles[i].init(&particleBox2, 0.5f, Vector3(0,0,0), Vector3(0,0,0), 7000.0f, 1);
->>>>>>> origin/master
 		particles[i].setInActive();
 	}
 
@@ -257,7 +253,6 @@ void ColoredCubeApp::initApp()
 
 	//Places stars in scene
 	placeStars();
-
 }
 
 void ColoredCubeApp::onResize()
@@ -332,7 +327,7 @@ void generateEnemy(GameObject enemyObjects[], float dt) {
 
 			//These are the player starting points
 			Vector3 direction = Vector3(5, .5, (randomZValue)/2.0f) - enemyObjects[i].getPosition();
-			while (isPreviousPosition(direction.z, numEnemiesGenerated, previousDirections)) {
+			while (isPreviousDirection(direction.z, numEnemiesGenerated, previousDirections)) {
 				randomZValue = ( rand() % ( 2 * (PLAYER_Z_RANGE + 1) ) ) * leftOrRightSide;
 				direction = Vector3(5, .5, (randomZValue)/2.0f) - enemyObjects[i].getPosition();
 			}
@@ -346,29 +341,7 @@ void generateEnemy(GameObject enemyObjects[], float dt) {
 			numEnemiesGenerated++;
 			//Most of the time, only one block will be generated. This is the second block
 			if (rand()%3 || numEnemiesGenerated == 3)
-			{
-				//int index = i + 1;
-				//if ( index == MAX_NUM_ENEMIES )
-				//	index = 0;
-				////put the enemy object somewhere randomly and make them active
-
-				//if (horizontalStartingPoint == 0)
-
-				//enemyObjects[index].setPosition(Vector3(-5,.5, -horizontalStartingPoint));
-				//enemyObjects[index].setActive();
-
-				//prevPositions[numEnemiesGenerated] = enemyObjects[index].getPosition();
-				//numEnemiesGenerated++;
-
-				////Now figure out their direction of travel
-				//Vector3 direction = Vector3(5, .5, -randomZValue) - enemyObjects[index].getPosition();
-				//D3DXVec3Normalize(&direction, &direction);
-				//Vector3 vel = direction * enemyObjects[index].getSpeed();
-
-				//enemyObjects[index].setVelocity(vel);
-
 				return;
-			}
 		}
 	}
 }
