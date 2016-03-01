@@ -711,8 +711,9 @@ void ColoredCubeApp::drawScene()
 		std::wostringstream gameOverString;   
 		gameOverString.precision(6);
 		gameOverString << "GAME OVER!\n";
+		gameOverString << "Spacebar to\nplay again.";
 		finalScore = gameOverString.str();
-		RECT R2 = {GAME_WIDTH/2 - 150, GAME_HEIGHT/2 - 25, 0, 0};
+		RECT R2 = {GAME_WIDTH/2 - 100, GAME_HEIGHT/2 - 100, 0, 0};
 		endFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, GREEN);
 	}
 	if(gsm->getGameState() == GameStateManager::START_GAME){
