@@ -267,22 +267,14 @@ void ColoredCubeApp::onResize()
 bool isPreviousPosition(int hValue, int numEnemiesGenerated, Vector3 prevPositions[]) {
 	for (int i = 0; i < numEnemiesGenerated; i++)
 	{
-		if (hValue == prevPositions[i].z)
-			return true;
-	}
-
-	return false;
-}
-
-bool isPreviousDirection(int hValue, int numEnemiesGenerated, Vector3 prevPositions[]) {
-	for (int i = 0; i < numEnemiesGenerated; i++)
-	{
 		if (hValue == prevPositions[i].z || hValue == prevPositions[i].z - 1 || hValue == prevPositions[i].z + 1 )
 			return true;
 	}
 
 	return false;
 }
+
+
 
 bool isPreviousLocation(float hValue, int numEnemiesGenerated, Vector3 prevPositions[]) {
 	for (int i = 0; i < numEnemiesGenerated; i++)
@@ -340,7 +332,7 @@ void generateEnemy(GameObject enemyObjects[], float dt) {
 
 			Vector3 location = Vector3(5, .5, (randomZValue)/2.0f);
 
-			while (isPreviousDirection(location.z, numEnemiesGenerated, previousLocations)) {
+			while (isPreviousLocation(location.z, numEnemiesGenerated, previousLocations)) {
 				randomZValue = ( rand() % ( 2 * (PLAYER_Z_RANGE + 1) ) ) * leftOrRightSide;
 				location = Vector3(5, .5, (randomZValue)/2.0f);
 
