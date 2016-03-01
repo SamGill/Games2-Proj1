@@ -173,7 +173,7 @@ void ColoredCubeApp::initApp()
 	mPlayer.init(md3dDevice, .5f, BLUE);
 	mBullet.init(md3dDevice, .25f, D3DXCOLOR(0.0f, 1.0f, 0.0f, 0.0f));
 	particleBox.init(md3dDevice, .01f, GREEN);
-	particleBox2.init(md3dDevice, .015f, RED);
+	particleBox2.init(md3dDevice, .04f, RED);
 	starBox.init(md3dDevice, 0.05f, WHITE);
 	//mBox.init(md3dDevice, boxScale);
 	mLine.init(md3dDevice, 1.0f);
@@ -203,8 +203,8 @@ void ColoredCubeApp::initApp()
 	for (int i = 0; i < MAX_NUM_EXP_PARTICLES; i++)
 	{
 
-		if(i%2 == 0)particles[i].init(&particleBox, 0.5f, Vector3(0,0,0), Vector3(0,0,0), 7000.0f, 1);
-		else particles[i].init(&particleBox2, 0.5f, Vector3(0,0,0), Vector3(0,0,0), 7000.0f, 1);
+		if(i%5 == 0)particles[i].init(&particleBox2, 0.5f, Vector3(0,0,0), Vector3(0,0,0), 7000.0f, 1);
+		else particles[i].init(&particleBox, 0.5f, Vector3(0,0,0), Vector3(0,0,0), 7000.0f, 1);
 		particles[i].setInActive();
 	}
 
@@ -267,17 +267,27 @@ void ColoredCubeApp::onResize()
 bool isPreviousPosition(int hValue, int numEnemiesGenerated, Vector3 prevPositions[]) {
 	for (int i = 0; i < numEnemiesGenerated; i++)
 	{
-		if (hValue == prevPositions[i].z || hValue == prevPositions[i].z + 1 || hValue == prevPositions[i].z - 1)
+		if (hValue == prevPositions[i].z)
 			return true;
 	}
 
 	return false;
 }
 
-bool isPreviousDirection(float hValue, int numEnemiesGenerated, Vector3 prevPositions[]) {
+bool isPreviousDirection(int hValue, int numEnemiesGenerated, Vector3 prevPositions[]) {
 	for (int i = 0; i < numEnemiesGenerated; i++)
 	{
-		if (hValue == prevPositions[i].z || hValue == prevPositions[i].z + 0.5f || hValue == prevPositions[i].z - 0.5f)
+		if (hValue == prevPositions[i].z || hValue == prevPositions[i].z - 1 || hValue == prevPositions[i].z + 1 )
+			return true;
+	}
+
+	return false;
+}
+
+bool isPreviousLocation(float hValue, int numEnemiesGenerated, Vector3 prevPositions[]) {
+	for (int i = 0; i < numEnemiesGenerated; i++)
+	{
+		if (hValue == prevPositions[i].z || hValue == prevPositions[i].z - 0.5f || hValue == prevPositions[i].z + 0.5f )
 			return true;
 	}
 
@@ -289,9 +299,7 @@ void generateEnemy(GameObject enemyObjects[], float dt) {
 	int numEnemiesGenerated = 0;
 
 	Vector3 prevPositions[MAX_NUM_ENEMIES];
-
-	Vector3 previousDirections[MAX_NUM_ENEMIES];
-
+	Vector3 previousLocations[MAX_NUM_ENEMIES];
 	for (int i = 0; i < MAX_NUM_ENEMIES; i++)
 	{
 		//This means he's already on the field, so keep going
@@ -315,6 +323,9 @@ void generateEnemy(GameObject enemyObjects[], float dt) {
 					break;
 			}
 
+
+
+
 			//put the enemy object somewhere randomly and make them active
 			enemyObjects[i].setPosition(Vector3(-5,.5, horizontalStartingPoint));
 			enemyObjects[i].setActive();
@@ -323,20 +334,28 @@ void generateEnemy(GameObject enemyObjects[], float dt) {
 
 
 			//Now figure out their direction of travel
-			int randomZValue = ( rand() % ( 2 * (PLAYER_Z_RANGE + 1) ) ) * leftOrRightSide;
+			int randomZValue = ( rand() % (PLAYER_Z_RANGE + 1) ) * leftOrRightSide;
 
 			//These are the player starting points
-			Vector3 direction = Vector3(5, .5, (randomZValue)/2.0f) - enemyObjects[i].getPosition();
-			while (isPreviousDirection(direction.z, numEnemiesGenerated, previousDirections)) {
+
+			Vector3 location = Vector3(5, .5, (randomZValue)/2.0f);
+
+			while (isPreviousDirection(location.z, numEnemiesGenerated, previousLocations)) {
 				randomZValue = ( rand() % ( 2 * (PLAYER_Z_RANGE + 1) ) ) * leftOrRightSide;
-				direction = Vector3(5, .5, (randomZValue)/2.0f) - enemyObjects[i].getPosition();
+				location = Vector3(5, .5, (randomZValue)/2.0f);
+
+
 			}
+
+			Vector3 direction =  location - enemyObjects[i].getPosition();
+
+			previousLocations[numEnemiesGenerated] = location;
 
 
 			D3DXVec3Normalize(&direction, &direction);
-			Vector3 vel = direction * enemyObjects[i].getSpeed();
 
-			enemyObjects[i].setVelocity(vel);
+			enemyObjects[i].setVelocity(direction * enemyObjects[i].getSpeed());
+
 
 			numEnemiesGenerated++;
 			//Most of the time, only one block will be generated. This is the second block
@@ -453,7 +472,7 @@ void ColoredCubeApp::updateScene(float dt)
 				particles[i].update(dt);
 			}
 
-
+			
 
 			if(explosionRunning) explosionTimer += dt;
 			if (explosionTimer > .55) {
@@ -714,19 +733,9 @@ void ColoredCubeApp::drawScene()
 		std::wostringstream gameOverString;   
 		gameOverString.precision(6);
 		gameOverString << "GAME OVER!\n";
-
-
 		finalScore = gameOverString.str();
 		RECT R2 = {GAME_WIDTH/2 - 150, GAME_HEIGHT/2 - 25, 0, 0};
 		endFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, GREEN);
-
-		std::wostringstream restartString;
-		gameOverString.precision(6);
-		restartString << "Press Space to Restart"; 
-
-		finalScore = restartString.str();
-		RECT R3 = {GAME_WIDTH/2 - 150, GAME_HEIGHT/2 + 100, 0, 0};
-		scoreFont->DrawText(0, finalScore.c_str(), -1, &R3, DT_NOCLIP, GREEN);
 	}
 	if(gsm->getGameState() == GameStateManager::START_GAME){
 		std::wostringstream gameOverString;   
@@ -748,7 +757,7 @@ void ColoredCubeApp::drawScene()
 		scoreFont->DrawText(0, finalScore.c_str(), -1, &R2, DT_NOCLIP, GREEN);
 	}
 
-
+	
 	std::wostringstream ts;
 	ts.precision(6);
 	ts << secondsRemaining;
@@ -759,6 +768,9 @@ void ColoredCubeApp::drawScene()
 	// We specify DT_NOCLIP, so we do not care about width/height of the rect.
 	RECT R = {5, 5, 0, 0};
 	//mFont->DrawText(0, mFrameStats.c_str(), -1, &R, DT_NOCLIP, BLACK);
+
+
+
 
 	mSwapChain->Present(0, 0);
 }
